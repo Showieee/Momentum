@@ -1,4 +1,5 @@
 ﻿namespace Momentum.Domain.Entities;
+
 public class ImageEntity
 {
 	public Guid Id { get; set; }
