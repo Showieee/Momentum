@@ -1,4 +1,5 @@
 ﻿using Momentum.Persistence.Extensions;
+using Momentum.Services.Extensions;
 
 namespace Momentum.Api.Extensions;
 
@@ -9,7 +10,8 @@ public static class PresentationExtensions
 	{
 
 		services
-			.AddPersistence(configuration);
+			.AddPersistence(configuration)
+			.AddServices(configuration);
 
 		return services;
 	}
