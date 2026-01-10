@@ -6,7 +6,7 @@ public interface IAddressService
 {
 	Task<List<AddressModel>> Get();
 
-	Task<AddressModel> GetById(Guid id);
+	Task<AddressModel?> GetById(Guid id);
 
 	Task Insert(AddressModel address);
 

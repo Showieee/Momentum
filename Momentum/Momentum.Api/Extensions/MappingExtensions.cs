@@ -20,4 +20,13 @@ public static class MappingExtensions
 			PhoneNumber = value.PhoneNumber
 		};
 	}
+    public static CompanyModel ToModel(this InsertCompanyRequest value)
+    {
+		return new CompanyModel
+		{
+			Address = value.Address?.ToModel(),
+			CUI = value.CUI,
+			Name = value.Name
+		};
+    }
 }
