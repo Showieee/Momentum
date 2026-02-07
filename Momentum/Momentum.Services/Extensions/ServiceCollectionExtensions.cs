@@ -11,6 +11,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IAddressService, AddressService>();
         services.AddScoped<ICompanyService, CompanyService>();
+        services.AddScoped<IProductService, ProductService>();
 
         return services;
     }

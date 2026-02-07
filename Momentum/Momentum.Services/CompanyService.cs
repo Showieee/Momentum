@@ -39,7 +39,11 @@ public class CompanyService : ICompanyService
 
     public async Task<CompanyModel?> GetById(Guid id)
     {
-        var result = await DbContext.Set<CompanyEntity>().AsNoTracking().Include(c => c.Address).Where(x => x.Id == id).FirstOrDefaultAsync();
+        var result = await DbContext.Set<CompanyEntity>()
+            .AsNoTracking()
+            .Include(c => c.Address)
+            .Include(c => c.Products)
+            .FirstOrDefaultAsync(x => x.Id == id);
         return result?.ToModel();
     }
 

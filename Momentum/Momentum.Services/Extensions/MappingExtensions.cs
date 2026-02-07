@@ -31,6 +31,18 @@ public static class MappingExtensions
         };
     }
 
+    public static ProductEntity ToEntity(this ProductModel value, CompanyEntity companyEntity)
+    {
+        return new ProductEntity
+        {
+            Name = value.Name,
+            Description = value.Description,
+            Price = value.Price,
+            Type = value.Type,
+            Company = companyEntity
+        };
+    }
+
     public static AddressModel ToModel(this AddressEntity value)
     {
         return new AddressModel
@@ -46,7 +58,7 @@ public static class MappingExtensions
         };
     }
 
-    public static CompanyModel ToModel(this CompanyEntity value)
+    public static CompanyModel ToModel(this CompanyEntity value, bool mapProducts = true)
     {
         return new CompanyModel
         {
@@ -54,7 +66,22 @@ public static class MappingExtensions
             AddressId = value.AddressId,
             Address = value.Address?.ToModel(),
             CUI = value.CUI,
-            Name = value.Name
+            Name = value.Name,
+            Products = !mapProducts ? null : value.Products?.Select(p => p.ToModel(false)).ToList(),
+        };
+    }
+
+    public static ProductModel ToModel(this ProductEntity value, bool mapCompanies = true)
+    {
+        return new ProductModel
+        {
+            Id = value.Id,
+            Type = value.Type,
+            Description = value.Description,
+            CompanyId = value.CompanyId,
+            Name = value.Name,
+            Price = value.Price,
+            Company = !mapCompanies ? null : value.Company.ToModel(false),
         };
     }
 
@@ -67,5 +94,13 @@ public static class MappingExtensions
         entity.Email = value.Email;
         entity.PhoneNumber = value.PhoneNumber;
         entity.StreetName = value.StreetName;
+    }
+
+    public static void MapToEntity(this ProductModel value, ProductEntity entity)
+    {
+        entity.Name = value.Name;
+        entity.Description = value.Description;
+        entity.Price = value.Price;
+        entity.Type = value.Type;
     }
 }
