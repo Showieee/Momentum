@@ -127,7 +127,7 @@ namespace Momentum.Persistance.Migrations
 
                     b.HasIndex("AddressId");
 
-                    b.ToTable("PersonEntity");
+                    b.ToTable("Persons");
                 });
 
             modelBuilder.Entity("Momentum.Domain.Entities.ProductEntity", b =>

@@ -12,7 +12,7 @@ using Momentum.Persistance;
 namespace Momentum.Persistance.Migrations
 {
     [DbContext(typeof(MomentumDbContext))]
-    [Migration("20260207120040_AddPersonTable")]
+    [Migration("20260207130648_AddPersonTable")]
     partial class AddPersonTable
     {
         /// <inheritdoc />
@@ -130,7 +130,7 @@ namespace Momentum.Persistance.Migrations
 
                     b.HasIndex("AddressId");
 
-                    b.ToTable("PersonEntity");
+                    b.ToTable("Persons");
                 });
 
             modelBuilder.Entity("Momentum.Domain.Entities.ProductEntity", b =>

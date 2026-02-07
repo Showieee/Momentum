@@ -43,6 +43,18 @@ public static class MappingExtensions
         };
     }
 
+    public static PersonEntity ToEntity(this PersonModel value)
+    {
+        return new PersonEntity
+        {
+            Id = value.Id,
+            Address = value.Address?.ToEntity(),
+            CNP = value.CNP,
+            FirstName = value.FirstName,
+            LastName = value.LastName
+        };
+    }
+
     public static AddressModel ToModel(this AddressEntity value)
     {
         return new AddressModel
@@ -82,6 +94,18 @@ public static class MappingExtensions
             Name = value.Name,
             Price = value.Price,
             Company = !mapCompanies ? null : value.Company.ToModel(false),
+        };
+    }
+
+    public static PersonModel ToModel(this PersonEntity value)
+    {
+        return new PersonModel
+        {
+            Id = value.Id,
+            Address = value.Address?.ToModel(),
+            CNP = value.CNP,
+            FirstName = value.FirstName,
+            LastName = value.LastName
         };
     }
 

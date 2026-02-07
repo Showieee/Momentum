@@ -42,6 +42,29 @@ public static class MappingExtensions
         };
     }
 
+    public static PersonModel ToModel(this InsertPersonRequest value)
+    {
+
+        return new PersonModel
+        {
+            FirstName = value.FirstName,
+            LastName = value.LastName,
+            CNP = value.CNP,
+            Address = value.Address?.ToModel()
+        };
+    }
+
+    public static PersonModel ToModel(this UpdatePersonRequest value)
+    {
+        return new PersonModel
+        {
+            FirstName = value.FirstName ?? string.Empty,
+            LastName = value.LastName ?? string.Empty,
+            CNP = value.CNP ?? string.Empty,
+            Address = value.Address
+        };
+    }
+
     public static ProductModel ToModel(this UpdateProductRequest value)
     {
         return new ProductModel

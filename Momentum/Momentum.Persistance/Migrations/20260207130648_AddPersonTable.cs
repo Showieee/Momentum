@@ -12,7 +12,7 @@ namespace Momentum.Persistance.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "PersonEntity",
+                name: "Persons",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
@@ -23,17 +23,17 @@ namespace Momentum.Persistance.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PersonEntity", x => x.Id);
+                    table.PrimaryKey("PK_Persons", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_PersonEntity_Addresses_AddressId",
+                        name: "FK_Persons_Addresses_AddressId",
                         column: x => x.AddressId,
                         principalTable: "Addresses",
                         principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_PersonEntity_AddressId",
-                table: "PersonEntity",
+                name: "IX_Persons_AddressId",
+                table: "Persons",
                 column: "AddressId");
         }
 
@@ -41,7 +41,7 @@ namespace Momentum.Persistance.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "PersonEntity");
+                name: "Persons");
         }
     }
 }
