@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Momentum.Persistance;
 
@@ -11,9 +12,11 @@ using Momentum.Persistance;
 namespace Momentum.Persistance.Migrations
 {
     [DbContext(typeof(MomentumDbContext))]
-    partial class MomentumDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260110125719_MakeAddressNullable")]
+    partial class MakeAddressNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -102,34 +105,6 @@ namespace Momentum.Persistance.Migrations
                     b.ToTable("Images");
                 });
 
-            modelBuilder.Entity("Momentum.Domain.Entities.PersonEntity", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("AddressId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("CNP")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AddressId");
-
-                    b.ToTable("Persons");
-                });
-
             modelBuilder.Entity("Momentum.Domain.Entities.ProductEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -160,15 +135,6 @@ namespace Momentum.Persistance.Migrations
                 });
 
             modelBuilder.Entity("Momentum.Domain.Entities.CompanyEntity", b =>
-                {
-                    b.HasOne("Momentum.Domain.Entities.AddressEntity", "Address")
-                        .WithMany()
-                        .HasForeignKey("AddressId");
-
-                    b.Navigation("Address");
-                });
-
-            modelBuilder.Entity("Momentum.Domain.Entities.PersonEntity", b =>
                 {
                     b.HasOne("Momentum.Domain.Entities.AddressEntity", "Address")
                         .WithMany()

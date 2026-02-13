@@ -3,7 +3,7 @@
 public class CompanyEntity
 {
 	public Guid Id { get; set; }
-	public Guid AddressId { get; set; }
+	public Guid? AddressId { get; set; }
 	public AddressEntity? Address { get; set; } = null;
 	public required string Name { get; set; }
 	public required string CUI { get; set; }

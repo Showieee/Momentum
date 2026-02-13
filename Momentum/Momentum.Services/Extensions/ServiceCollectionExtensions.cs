@@ -1,17 +1,19 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Momentum.Services.Interfaces;
 
 namespace Momentum.Services.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-	public static IServiceCollection AddServices(this IServiceCollection services,
-		IConfiguration configuration)
-	{
-		services.AddScoped<IAddressService, AddressService>();
+    public static IServiceCollection AddServices(this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.AddScoped<IAddressService, AddressService>();
+        services.AddScoped<ICompanyService, CompanyService>();
+        services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<IPersonService, PersonService>();
 
-		return services;
-	}
+        return services;
+    }
 }

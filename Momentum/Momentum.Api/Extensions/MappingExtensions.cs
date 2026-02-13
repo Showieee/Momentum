@@ -1,12 +1,11 @@
 ﻿using Momentum.API.Models;
-using Momentum.Domain.Entities;
+using Momentum.Domain.Enums;
 using Momentum.Services.Models;
 
 namespace Momentum.API.Extensions;
 
 public static class MappingExtensions
 {
-
 	public static AddressModel ToModel(this InsertAddressRequest value)
 	{
 		return new AddressModel
@@ -20,4 +19,60 @@ public static class MappingExtensions
 			PhoneNumber = value.PhoneNumber
 		};
 	}
+    public static CompanyModel ToModel(this InsertCompanyRequest value)
+    {
+		return new CompanyModel
+		{
+			Address = value.Address?.ToModel(),
+			CUI = value.CUI,
+			Name = value.Name
+		};
+    }
+
+    public static ProductModel ToModel(this InsertProductRequest value)
+    {
+        
+        return new ProductModel
+        {
+            Type = value.Type,
+            Name = value.Name,
+            Description = value.Description,
+            Price = value.Price,
+			CompanyId = value.CompanyId
+        };
+    }
+
+    public static PersonModel ToModel(this InsertPersonRequest value)
+    {
+
+        return new PersonModel
+        {
+            FirstName = value.FirstName,
+            LastName = value.LastName,
+            CNP = value.CNP,
+            Address = value.Address?.ToModel()
+        };
+    }
+
+    public static PersonModel ToModel(this UpdatePersonRequest value)
+    {
+        return new PersonModel
+        {
+            FirstName = value.FirstName ?? string.Empty,
+            LastName = value.LastName ?? string.Empty,
+            CNP = value.CNP ?? string.Empty,
+            Address = value.Address
+        };
+    }
+
+    public static ProductModel ToModel(this UpdateProductRequest value)
+    {
+        return new ProductModel
+        {
+            Type = value.ProductType ?? ProductType.Undefined,
+            Name = value.Name ?? string.Empty,
+            Description = value.Description,
+            Price = value.Price ?? 0
+        };
+    }
 }
