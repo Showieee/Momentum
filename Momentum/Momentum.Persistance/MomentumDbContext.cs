@@ -21,8 +21,9 @@ public class MomentumDbContext : DbContext
 	public virtual DbSet<AddressEntity> Addresses { get; set; } = null!;
 	public virtual DbSet<ImageEntity> Images { get; set; } = null!;
 	public virtual DbSet<PersonEntity> Persons { get; set; } = null!;
+    public virtual DbSet<EventEntity> Events { get; set; } = null!;
 
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{
 		base.OnModelCreating(modelBuilder);
 
