@@ -2,9 +2,9 @@
 
 public enum EventType
 {
-    Undefined,
-    Wedding,
-    Birthday,
-    Teambuilding,
-    Festival
+    Undefined = 0,
+    Wedding = 1,
+    Birthday = 2,
+    Teambuilding = 3,
+    Festival = 4
 }

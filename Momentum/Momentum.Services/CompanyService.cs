@@ -52,6 +52,7 @@ public class CompanyService : ICompanyService
         var entity = company.ToEntity();
 
         DbContext.Add(entity);
+
         await DbContext.SaveChangesAsync();
     }
 

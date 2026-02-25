@@ -13,9 +13,9 @@ namespace Momentum.Services.Interfaces
 
         Task<ProductModel?> GetById(Guid id);
 
-        Task Insert(ProductModel company);
+        Task Insert(ProductModel product);
 
-        Task Update(Guid id, ProductModel company);
+        Task Update(Guid id, ProductModel product);
         Task DeleteById(Guid id);
         Task Delete(Guid id);
     }

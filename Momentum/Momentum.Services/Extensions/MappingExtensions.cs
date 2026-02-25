@@ -30,6 +30,15 @@ public static class MappingExtensions
             Name = value.Name
         };
     }
+    public static EventEntity ToEntity(this EventModel value)
+    {
+        return new EventEntity
+        {
+            Type = value.Type,
+            Name = value.Name,
+            Date = value.Date
+        };
+    }
 
     public static ProductEntity ToEntity(this ProductModel value, CompanyEntity companyEntity)
     {
@@ -55,6 +64,17 @@ public static class MappingExtensions
         };
     }
 
+    public static EventModel ToModel(this EventEntity value, bool mapProducts = true)
+    {
+        return new EventModel
+        {   
+            Id = value.Id,
+            Type = value.Type,
+            Name = value.Name,
+            Date = value.Date,
+            Products = !mapProducts ? null : value.Products?.Select(p => p.ToModel(false)).ToList(),
+        };
+    }
     public static AddressModel ToModel(this AddressEntity value)
     {
         return new AddressModel
@@ -127,4 +147,12 @@ public static class MappingExtensions
         entity.Price = value.Price;
         entity.Type = value.Type;
     }
+
+    public static void MapToEntity(this EventModel value, EventEntity entity)
+    {
+        entity.Type = value.Type;
+        entity.Name = value.Name;
+        entity.Date = value.Date;
+    }
+
 }

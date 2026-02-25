@@ -6,6 +6,15 @@ namespace Momentum.API.Extensions;
 
 public static class MappingExtensions
 {
+    public static EventModel ToModel(this InsertEventRequest value)
+    {
+        return new EventModel
+        {   
+            Type = value.Type,
+            Name = value.Name,
+            Date = value.Date
+        };
+    }
 	public static AddressModel ToModel(this InsertAddressRequest value)
 	{
 		return new AddressModel
@@ -73,6 +82,16 @@ public static class MappingExtensions
             Name = value.Name ?? string.Empty,
             Description = value.Description,
             Price = value.Price ?? 0
+        };
+    }
+
+    public static EventModel ToModel(this UpdateEventRequest value)
+    {
+        return new EventModel
+        {
+            Type = value.EventType ?? EventType.Undefined,
+            Name = value.Name ?? string.Empty,
+            Date = value.Date ?? string.Empty,
         };
     }
 }
