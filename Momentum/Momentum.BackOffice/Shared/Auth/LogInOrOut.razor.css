@@ -1,0 +1,9 @@
+﻿/* custom styles */
+.authorized-container {
+    display: flex;
+    align-items: center;
+}
+
+.logout-form {
+    margin-left: 10px;
+}

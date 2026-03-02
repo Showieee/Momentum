@@ -1,0 +1,64 @@
+﻿@inherits ExtendedComponentBase
+@attribute [Authorize(Roles = "Administrator")]
+
+<PageTitle>Options</PageTitle>
+
+<EditForm Model="Model" OnValidSubmit="@Submit" class="d-flex flex-column h-100">
+    <FluentValidator @ref="_formValidator" TValidator="IValidator<OptionsViewModel>" />
+    <div class="row">
+        <h3 class="mb-4">Options</h3>
+    </div>
+    <div class="form-group col-lg-4 mb-4">
+        <label class="form-label" for="PricePerHour">Price per hour</label>
+        <InputNumber id="PricePerHour" class="form-control" @bind-Value="Model.PricePerHour" />
+        <ValidationMessage For="@(() => Model.PricePerHour)" />
+    </div>
+    <div class="form-group col-lg-4 mb-4">
+        <label class="form-label" for="MinimumMinutesToCharge">Minimum minutes to charge</label>
+        <InputNumber id="MinimumMinutesToCharge" class="form-control" @bind-Value="Model.MinimumMinutesToCharge" />
+        <ValidationMessage For="@(() => Model.MinimumMinutesToCharge)" />
+    </div>
+    <div class="form-group col-lg-4 mb-4">
+        <label class="form-label" for="BillingPeriodMinutes">Billing period in minutes</label>
+        <InputNumber id="BillingPeriodMinutes" class="form-control" @bind-Value="Model.BillingPeriodMinutes" />
+        <ValidationMessage For="@(() => Model.BillingPeriodMinutes)" />
+    </div>
+    <div class="form-group col-lg-4 mb-4">
+        <label class="form-label" for="FreeMinutes">Free Minutes</label>
+        <InputNumber id="FreeMinutes" class="form-control" @bind-Value="Model.FreeMinutes" />
+        <ValidationMessage For="@(() => Model.FreeMinutes)" />
+    </div>
+    <div class="form-group col-lg-4 mb-4">
+        <label class="form-label" for="MinutesToExit">Minutes to exit</label>
+        <InputNumber id="MinutesToExit" class="form-control" @bind-Value="Model.MinutesToExit" />
+        <ValidationMessage For="@(() => Model.MinutesToExit)" />
+    </div>
+    <div class="form-group col-lg-4 mb-4">
+        <label class="form-label" for="ParkingCapacity">Parking capacity</label>
+        <InputNumber id="ParkingCapacity" class="form-control" @bind-Value="Model.ParkingCapacity" />
+        <ValidationMessage For="@(() => Model.ParkingCapacity)" />
+    </div>
+    <div class="form-group col-lg-4 mb-4">
+        <label class="form-label" for="PriceRoundDecimals">Price round decimals</label>
+        <InputNumber id="PriceRoundDecimals" class="form-control" @bind-Value="Model.PriceRoundDecimals" />
+        <ValidationMessage For="@(() => Model.PriceRoundDecimals)" />
+    </div>
+    <div class="form-group col-lg-4 mb-4">
+        <label class="form-label" for="DateToleranceSeconds">Date tolerence in seconds</label>
+        <InputNumber id="DateToleranceSeconds" class="form-control" @bind-Value="Model.DateToleranceSeconds" />
+        <ValidationMessage For="@(() => Model.DateToleranceSeconds)" />
+    </div>
+    <div class="form-group col-lg-4 mb-4">
+        <label class="form-label" for="ExitCode">Exit code</label>
+        <InputText id="ExitCode" class="form-control" @bind-Value="Model.ExitCode" />
+        <ValidationMessage For="@(() => Model.ExitCode)" />
+    </div>
+    <div class="form-group col-lg-4 mb-4">
+        <label class="form-label" for="TestDevicesCode">Test Devices Code</label>
+        <InputText id="TestDevicesCode" class="form-control" @bind-Value="Model.TestDevicesCode" />
+        <ValidationMessage For="@(() => Model.TestDevicesCode)" />
+    </div>
+    <div>
+        <button type="submit" class="btn btn-primary mr-1">Save</button>
+    </div>
+</EditForm>

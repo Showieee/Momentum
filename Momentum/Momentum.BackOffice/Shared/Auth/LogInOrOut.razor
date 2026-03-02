@@ -1,0 +1,23 @@
+﻿<div class="nav-item px-3">
+    <AuthorizeView>
+        <Authorized>
+            <div class="authorized-container">
+                <a class="nav-link" href="user-claims">
+                    <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span>@context.User.Identity?.Name
+                </a>
+                <form action="@PageRoutes.Account.Logout" method="post" class="logout-form">
+                    <AntiforgeryToken />
+                    <input type="hidden" name="ReturnUrl" value="@PageRoutes.Account.Login" />
+                    <button type="submit" class="nav-link">
+                        <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Logout
+                    </button>
+                </form>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <a class="nav-link" href="@PageRoutes.Account.Login">
+                <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Login
+            </a>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>

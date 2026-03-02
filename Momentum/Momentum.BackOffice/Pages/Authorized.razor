@@ -1,0 +1,25 @@
+﻿@page "/auth"
+@inherits ExtendedComponentBase
+@using Momentum.BackOffice.Services
+
+@attribute [Authorize]
+
+<PageTitle>Auth</PageTitle>
+
+<h1>You are authenticated</h1>
+
+<AuthorizeView>
+    Hello @context.User.Identity?.Name!
+</AuthorizeView>
+
+@code {
+    [Inject] ITestService TestService { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await SafeExecute(async () =>
+        {
+            await TestService.TestCertificateAuth();
+        });
+    }
+}
