@@ -13,12 +13,6 @@ namespace Momentum.BackOffice.Extensions;
 
 public static class WebAssemblyHostExtensions
 {
-	#region Fields
-
-	private const string CertificateName = "CN=backoffice.sfanta_treime.ro";
-
-	#endregion //Fields
-
 	#region Public Methods
 
 	internal static WebApplicationBuilder AddBlazor(this WebApplicationBuilder builder)
@@ -36,16 +30,17 @@ public static class WebAssemblyHostExtensions
 	internal static WebApplicationBuilder AddPersistence(this WebApplicationBuilder builder)
 	{
 		var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-		builder
+
+        builder
 			.Services
-			.AddDbContext<MomentumIdentityDbContext>((_, options) =>
-			{
-				options.UseNpgsql(connectionString, x =>
-				{
-					x.MigrationsHistoryTable("__EFMigrationsHistory", "dbo");
-				});
-			});
-		builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+        .AddDbContext<MomentumIdentityDbContext>((options) =>
+        {
+            options.UseSqlServer(connectionString, x =>
+            {
+                x.MigrationsHistoryTable("__EFMigrationsHistory", "dbo");
+            });
+        });
+        builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 		return builder;
 	}
@@ -95,7 +90,7 @@ public static class WebAssemblyHostExtensions
 			.AddValidatorsFromAssembly(typeof(IAssemblyMarker).Assembly);
 
 		var serverUri = new Uri(builder.Configuration["ApiServerUrl"]!);
-		AddRefitClients<IAssemblyMarker>(builder.Services, serverUri, CertificateName);
+		AddRefitClients<IAssemblyMarker>(builder.Services, serverUri);
 
 		return builder;
 	}
@@ -103,8 +98,7 @@ public static class WebAssemblyHostExtensions
 	#region Private Methods
 
 	private static void AddRefitClients<TAssemblyMarker>(IServiceCollection services,
-		Uri serverUri,
-		string certificateName)
+		Uri serverUri)
 	{
 		var types = typeof(TAssemblyMarker)
 			.Assembly

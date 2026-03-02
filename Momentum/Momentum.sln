@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Momentum.API", "Momentum.AP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Momentum.BackOffice", "Momentum.BackOffice\Momentum.BackOffice.csproj", "{C773E0F1-54D0-0FD0-F3D0-D0714C858C8C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Momentum.Shared", "Momentum.Shared\Momentum.Shared.csproj", "{B5558848-2950-4D40-0F0C-6C613643AA80}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{C773E0F1-54D0-0FD0-F3D0-D0714C858C8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C773E0F1-54D0-0FD0-F3D0-D0714C858C8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C773E0F1-54D0-0FD0-F3D0-D0714C858C8C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5558848-2950-4D40-0F0C-6C613643AA80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5558848-2950-4D40-0F0C-6C613643AA80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5558848-2950-4D40-0F0C-6C613643AA80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5558848-2950-4D40-0F0C-6C613643AA80}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

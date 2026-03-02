@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <SignAssembly>False</SignAssembly>
+    <AssemblyOriginatorKeyFile>sign.snk</AssemblyOriginatorKeyFile>
+    <AssemblyVersion>2.1.25501.01</AssemblyVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Providers\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Polly" Version="8.5.2" />
+  </ItemGroup>
+  <PropertyGroup>
+    <SolutionDir Condition="'$(SolutionDir)' == '' Or '$(SolutionDir)' == '*Undefined*'">$(MSBuildProjectDirectory)\..\..\</SolutionDir>
+  </PropertyGroup>
+  <UsingTask TaskName="IncrementBuildNumber" AssemblyFile="$(SolutionDir)src/References/Tasks/CustomTasks.dll" />
+  <!--<Target Name="IncrementVersion" BeforeTargets="BeforeBuild" Condition="Exists('$(SolutionDir)src/References/Tasks/CustomTasks.dll')">
+    <Message Text="Incrementing build number for project: $(MSBuildProjectFullPath)" Importance="high" />
+    <IncrementBuildNumber ProjectFilePath="$(MSBuildProjectFullPath)" />
+  </Target>-->
+</Project>

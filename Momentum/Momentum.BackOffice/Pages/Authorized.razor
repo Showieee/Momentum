@@ -11,15 +11,3 @@
 <AuthorizeView>
     Hello @context.User.Identity?.Name!
 </AuthorizeView>
-
-@code {
-    [Inject] ITestService TestService { get; set; } = null!;
-
-    protected override async Task OnInitializedAsync()
-    {
-        await SafeExecute(async () =>
-        {
-            await TestService.TestCertificateAuth();
-        });
-    }
-}

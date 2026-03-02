@@ -61,14 +61,6 @@ public partial class MainLayout : IToastNotificationComponent
 		{
 			_navItems.Add(new NavItem { Id = "10", Href = PageRoutes.Options, IconName = IconName.Gear, Text = "Options" });
 		}
-		
-		if (isAuthenticated && (user.IsInRole(Roles.Manager) || user.IsInRole(Roles.Administrator)))
-		{
-			_navItems.Add(new NavItem { Id = "11", Href = PageRoutes.Payments, IconName = IconName.CurrencyDollar, Text = "Payments" });
-			_navItems.Add(new NavItem { Id = "12", Href = PageRoutes.Whitelist, IconName = IconName.ListCheck, Text = "Whitelist" });
-			_navItems.Add(new NavItem { Id = "13", Href = PageRoutes.CustomerAudits, IconName = IconName.ListColumnsReverse, Text = "Audits" });
-			_navItems.Add(new NavItem { Id = "14", Href = PageRoutes.AnafReports, IconName = IconName.GraphUp, Text = "ANAF Reports" });
-		}
 	}
 
 	#endregion //Private Methods

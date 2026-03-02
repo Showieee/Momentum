@@ -5,10 +5,6 @@ internal class PageRoutes
 	public const string Dashboard = "";
 	public const string UserClaims = "user-claims";
 	public const string Options = "options";
-	public const string Payments = "payments";
-	public const string CustomerAudits = "audits";
-	public const string Whitelist = "whitelist";
-	public const string AnafReports = "anaf-reports";
 
 	internal class Authentication
 	{
