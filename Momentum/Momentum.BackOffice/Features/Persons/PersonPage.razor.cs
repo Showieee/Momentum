@@ -69,7 +69,7 @@ public partial class PersonPage : IDisposable
 
     private void OnSearchInput(ChangeEventArgs e)
     {
-        _searchText = e.Value?.ToString()?.Trim().ToUpper() ?? string.Empty;
+        _searchText = e.Value?.ToString()?.Trim() ?? string.Empty;
 
         _cts?.Cancel();
         _cts = new CancellationTokenSource();
@@ -98,7 +98,8 @@ public partial class PersonPage : IDisposable
         {
             _filteredModel = _model
                 .Where(x => x.FirstName?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) == true ||
-                x.LastName?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) == true)
+                x.LastName?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) == true ||
+                x.CNP?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) == true)
                 .ToList();
         }
     }
