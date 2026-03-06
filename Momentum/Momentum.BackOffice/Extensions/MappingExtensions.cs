@@ -1,5 +1,6 @@
 ﻿using PersonsCompany = Momentum.BackOffice.Features.Companies;
 using PersonsFeature = Momentum.BackOffice.Features.Persons;
+using Momentum.BackOffice.Shared.Models;
 using Momentum.Shared.Models.Requests;
 
 namespace Momentum.BackOffice.Extensions;
@@ -20,7 +21,7 @@ public static class MappingExtensions
         };
     }
 
-    public static InsertAddressRequest ToRequest(this PersonsFeature.AddressEntryViewModel value)
+    public static InsertAddressRequest ToRequest(this AddressEntryViewModel value)
     {
         return new InsertAddressRequest
         {
@@ -51,7 +52,7 @@ public static class MappingExtensions
         {
             Name = value.Name!,
             CUI = value.CUI!,
-            Address = value.Address != null && !IsEmptyCompanyAddress(value.Address) ? new()
+            Address = value.Address != null && !IsEmptyAddress(value.Address) ? new()
             {
                 StreetName = value.Address.StreetName ?? string.Empty,
                 StreetNumber = value.Address.StreetNumber ?? string.Empty,
@@ -64,7 +65,7 @@ public static class MappingExtensions
         };
     }
 
-    private static bool IsEmptyCompanyAddress(PersonsCompany.AddressEntryViewModel address)
+    private static bool IsEmptyAddress(AddressEntryViewModel address)
     {
         return string.IsNullOrEmpty(address.StreetName) &&
                string.IsNullOrEmpty(address.StreetNumber) &&
@@ -74,5 +75,3 @@ public static class MappingExtensions
                string.IsNullOrEmpty(address.Email);
     }
 }
-
-

@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.IdentityModel.Tokens;
+using Momentum.BackOffice.Shared.Models;
 
 namespace Momentum.BackOffice.Features.Persons;
 

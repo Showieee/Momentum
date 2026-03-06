@@ -1,4 +1,6 @@
-﻿namespace Momentum.BackOffice.Features.Persons;
+﻿using Momentum.BackOffice.Shared.Models;
+
+namespace Momentum.BackOffice.Features.Persons;
 
 public sealed class PersonEntryViewModel
 {
@@ -8,13 +10,3 @@ public sealed class PersonEntryViewModel
     public string? CNP { get; set; }
 }
 
-public sealed class AddressEntryViewModel
-{
-    public string? StreetName { get; set; }
-    public string? StreetNumber { get; set; }
-    public string? City { get; set; }
-    public string? State { get; set; }
-    public string? Country { get; set; }
-    public string? PhoneNumber { get; set; }
-    public string? Email { get; set; }
-}
