@@ -2,9 +2,10 @@
 
 public static class Routes
 {
-	public static class Options
+	public static class Persons
 	{
-		public const string Get = "/options";
-		public const string Upsert = "/options";
-	}
+		public const string Get = "/person";
+		public const string Insert = "/person";
+		public const string Delete = "/person/{id}";
+    }
 }

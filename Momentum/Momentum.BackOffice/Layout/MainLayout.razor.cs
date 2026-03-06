@@ -59,7 +59,7 @@ public partial class MainLayout : IToastNotificationComponent
 
 		if (isAuthenticated && user.IsInRole(Roles.Administrator))
 		{
-			_navItems.Add(new NavItem { Id = "10", Href = PageRoutes.Options, IconName = IconName.Gear, Text = "Options" });
+			_navItems.Add(new NavItem { Id = "10", Href = PageRoutes.Persons, IconName = IconName.Gear, Text = "Persons" });
 		}
 	}
 

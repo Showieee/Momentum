@@ -1,13 +1,12 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="bb-page">
-    <Sidebar IconName="IconName.PSquare"
-             Title="Parking Dashboard"
-             DataProvider="SidebarDataProvider"/>
+    <Sidebar Title="Momentum Dashboard"
+             DataProvider="SidebarDataProvider" />
 
     <main>
         <div class="bb-top-row px-4 d-flex justify-content-end">
-            <LogInOrOut/>
+            <LogInOrOut />
         </div>
 
         <article class="content px-4">
@@ -22,10 +21,10 @@
 </div>
 
 <Preload LoadingText="Loading..." />
-<Toasts class="p-3" 
-        Messages="_messages" 
-        AutoHide="true" 
+<Toasts class="p-3"
+        Messages="_messages"
+        AutoHide="true"
         Delay="10000"
-        StackLength="3" 
+        StackLength="3"
         Placement="ToastsPlacement.BottomRight" />
-<Modal @ref="_modal" IsVerticallyCentered="true"/>
+<Modal @ref="_modal" IsVerticallyCentered="true" />

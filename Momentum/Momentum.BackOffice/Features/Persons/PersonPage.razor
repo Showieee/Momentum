@@ -1,0 +1,127 @@
+﻿@inherits ExtendedComponentBase
+@attribute [Authorize(Roles = "Administrator, Manager")]
+
+<h3>Persons Management</h3>
+
+<!-- Search Field -->
+<div class="mb-3">
+    <input type="text" class="form-control" placeholder="Search person..."
+           @bind="_searchText" @oninput="OnSearchInput" />
+</div>
+
+<!-- Add Button -->
+<button class="btn btn-primary mb-3" @onclick="OpenAddModal">
+    <i class="bi bi-plus-circle"></i> Add New Entry
+</button>
+
+<!-- Display Whitelist Table -->
+@if (_filteredModel.Count == 0)
+{
+    <p>No matching records found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>CNP</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var entry in _filteredModel)
+            {
+                <tr>
+                    <td>@entry.FirstName</td>
+                    <td>@entry.LastName</td>
+                    <td>@entry.CNP</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" @onclick="() => OpenDeleteModal(entry.Id)">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<!-- Add Modal -->
+<Modal @ref="_addModal" title="Add New Person" IsVerticallyCentered="true" OnHidden="RefreshModalData">
+    <BodyTemplate>
+        <EditForm EditContext="_editContext">
+            <FluentValidator TValidator="IValidator<PersonEntryViewModel>" />
+            <div class="mb-3">
+                <label class="form-label">First name</label>
+                <InputText type="text" class="form-control" @bind-value="_newEntry.FirstName" />
+                <ValidationMessage For="@(() => _newEntry.FirstName)" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Last name</label>
+                <InputText type="text" class="form-control" @bind-value="_newEntry.LastName" />
+                <ValidationMessage For="@(() => _newEntry.LastName)" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">CNP</label>
+                <InputText type="text" class="form-control" @bind-value="_newEntry.CNP" />
+                <ValidationMessage For="@(() => _newEntry.CNP)" class="text-danger" />
+            </div>
+            @* <div class="mb-3">
+                <label class="form-label">Street name</label>
+                <InputText type="text" class="form-control" @bind-value="_newEntry.Address!.StreetName" />
+                <ValidationMessage For="@(() => _newEntry.Address.StreetName)" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Street number</label>
+                <InputText type="text" class="form-control" @bind-value="_newEntry.Address!.StreetNumber" />
+                <ValidationMessage For="@(() => _newEntry.Address.StreetNumber)" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">City</label>
+                <InputText type="text" class="form-control" @bind-value="_newEntry.Address!.City" />
+                <ValidationMessage For="@(() => _newEntry.Address.City)" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">State</label>
+                <InputText type="text" class="form-control" @bind-value="_newEntry.Address!.State" />
+                <ValidationMessage For="@(() => _newEntry.Address.State)" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Country</label>
+                <InputText type="text" class="form-control" @bind-value="_newEntry.Address!.Country" />
+                <ValidationMessage For="@(() => _newEntry.Address.Country)" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <InputText type="text" class="form-control" @bind-value="_newEntry.Address!.Email" />
+                <ValidationMessage For="@(() => _newEntry.Address.Email)" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Phone number</label>
+                <InputText type="number" class="form-control" @bind-value="_newEntry.Address!.PhoneNumber" />
+                <ValidationMessage For="@(() => _newEntry.Address.PhoneNumber)" class="text-danger" />
+            </div> *@
+        </EditForm>
+    </BodyTemplate>
+    <FooterTemplate>
+        <button class="btn btn-secondary" @onclick="CloseAddModal">Cancel</button>
+        <button class="btn btn-primary" @onclick="AddPerson" disabled="@(!_isValidForm)">
+            Save
+        </button>
+    </FooterTemplate>
+</Modal>
+
+<!-- Delete Confirmation Modal -->
+<Modal @ref="_deleteModal" title="Confirm Deletion" IsVerticallyCentered="true">
+    <BodyTemplate>
+        <p>Are you sure you want to delete this entry?</p>
+        <strong>@($"{_selectedPerson.FirstName} {_selectedPerson.LastName}")</strong>
+        <strong>@($"CNP: {_selectedPerson.CNP}")</strong>
+    </BodyTemplate>
+    <FooterTemplate>
+        <button class="btn btn-secondary" @onclick="CloseDeleteModal">Cancel</button>
+        <button class="btn btn-danger" @onclick="ConfirmDeletePerson">Yes, Delete</button>
+    </FooterTemplate>
+</Modal>

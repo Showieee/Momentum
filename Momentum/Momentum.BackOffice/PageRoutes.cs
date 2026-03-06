@@ -4,7 +4,7 @@ internal class PageRoutes
 {
 	public const string Dashboard = "";
 	public const string UserClaims = "user-claims";
-	public const string Options = "options";
+	public const string Persons = "persons";
 
 	internal class Authentication
 	{
