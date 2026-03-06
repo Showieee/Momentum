@@ -27,7 +27,7 @@ public static class MappingExtensions
             FirstName = value.FirstName!,
             LastName = value.LastName!,
             CNP = value.CNP!,
-            //Address = value.Address?.ToRequest()
+            Address = value.Address?.ToRequest()
         };
     }
 }

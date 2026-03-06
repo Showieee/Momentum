@@ -68,7 +68,7 @@ else
                 <InputText type="text" class="form-control" @bind-value="_newEntry.CNP" />
                 <ValidationMessage For="@(() => _newEntry.CNP)" class="text-danger" />
             </div>
-            @* <div class="mb-3">
+             <div class="mb-3">
                 <label class="form-label">Street name</label>
                 <InputText type="text" class="form-control" @bind-value="_newEntry.Address!.StreetName" />
                 <ValidationMessage For="@(() => _newEntry.Address.StreetName)" class="text-danger" />
@@ -102,7 +102,7 @@ else
                 <label class="form-label">Phone number</label>
                 <InputText type="number" class="form-control" @bind-value="_newEntry.Address!.PhoneNumber" />
                 <ValidationMessage For="@(() => _newEntry.Address.PhoneNumber)" class="text-danger" />
-            </div> *@
+            </div> 
         </EditForm>
     </BodyTemplate>
     <FooterTemplate>

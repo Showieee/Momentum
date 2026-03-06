@@ -167,7 +167,6 @@ public partial class PersonPage : IDisposable
                 return;
             }
 
-            // Refresh list after deletion
             await LoadPersons();
             await _deleteModal!.HideAsync();
             await ShowSuccess("Successfully deleted");
