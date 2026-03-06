@@ -55,11 +55,11 @@ public class PersonController : ControllerBase
     }
 
     [HttpPut("{id}", Name = "UpdatePerson")]
-    public async Task Update([FromRoute] Guid id, [FromBody] PersonModel personModel)
+    public async Task Update([FromRoute] Guid id, [FromBody] UpdatePersonRequest personModel)
     {
         _logger.LogInformation("I am in UpdatePerson");
 
-        await _personService.Update(id, personModel);
+        await _personService.Update(id, personModel.ToModel());
 
         _logger.LogInformation("Update done");
     }

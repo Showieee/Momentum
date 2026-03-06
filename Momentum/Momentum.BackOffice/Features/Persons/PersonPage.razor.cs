@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Momentum.BackOffice.Extensions;
 using Momentum.BackOffice.Services;
+using Momentum.Shared.Models.Requests;
 
 namespace Momentum.BackOffice.Features.Persons;
 
@@ -21,6 +22,7 @@ public partial class PersonPage : IDisposable
     private PersonEntryViewModel _newEntry = new();
     private bool _isValidForm;
     private EditContext _editContext = null!;
+    private bool _isEditMode;
 
     private CancellationTokenSource? _cts;
 
@@ -113,22 +115,56 @@ public partial class PersonPage : IDisposable
 
         await SafeExecute(async () =>
         {
-            var request = _newEntry.ToRequest();
-            var response = await PersonService.InsertPerson(request);
-            if (response.Error is not null)
+            if (_isEditMode)
             {
-                await ShowException(response.Error);
-                return;
-            }
+                var updateRequest = new UpdatePersonRequest
+                {
+                    Id = _selectedPerson.Id,
+                    FirstName = _newEntry.FirstName!,
+                    LastName = _newEntry.LastName!,
+                    CNP = _newEntry.CNP!,
+                    Address = new()
+                    {
+                        StreetName = _newEntry.Address?.StreetName ?? string.Empty,
+                        StreetNumber = _newEntry.Address?.StreetNumber ?? string.Empty,
+                        City = _newEntry.Address?.City ?? string.Empty,
+                        State = _newEntry.Address?.State ?? string.Empty,
+                        Country = _newEntry.Address?.Country ?? string.Empty,
+                        Email = _newEntry.Address?.Email ?? string.Empty,
+                        PhoneNumber = _newEntry.Address?.PhoneNumber
+                    }
+                };
+                var response = await PersonService.UpdatePerson(_selectedPerson.Id, updateRequest);
+                if (response.Error is not null)
+                {
+                    await ShowException(response.Error);
+                    return;
+                }
 
-            await LoadPersons();
-            await _addModal!.HideAsync();
-            await ShowSuccess("Successfully added");
+                await LoadPersons();
+                await _addModal!.HideAsync();
+                await ShowSuccess("Successfully updated");
+            }
+            else
+            {
+                var request = _newEntry.ToRequest();
+                var response = await PersonService.InsertPerson(request);
+                if (response.Error is not null)
+                {
+                    await ShowException(response.Error);
+                    return;
+                }
+
+                await LoadPersons();
+                await _addModal!.HideAsync();
+                await ShowSuccess("Successfully added");
+            }
         });
     }
 
     private void RefreshModalData()
     {
+        _isEditMode = false;
         _newEntry = new PersonEntryViewModel();
         _editContext = new EditContext(_newEntry);
         _editContext.OnFieldChanged += FieldChange;
@@ -137,6 +173,35 @@ public partial class PersonPage : IDisposable
 
     private async Task OpenAddModal()
     {
+        RefreshModalData();
+        await _addModal!.ShowAsync();
+    }
+
+    private async Task OpenEditModal(Guid id)
+    {
+        _selectedPerson = _model.First(x => x.Id == id);
+        _newEntry = new PersonEntryViewModel
+        {
+            FirstName = _selectedPerson.FirstName,
+            LastName = _selectedPerson.LastName,
+            CNP = _selectedPerson.CNP,
+            Address = _selectedPerson.Address != null ? new()
+            {
+                StreetName = _selectedPerson.Address.StreetName,
+                StreetNumber = _selectedPerson.Address.StreetNumber,
+                City = _selectedPerson.Address.City,
+                State = _selectedPerson.Address.State,
+                Country = _selectedPerson.Address.Country,
+                Email = _selectedPerson.Address.Email,
+                PhoneNumber = _selectedPerson.Address.PhoneNumber
+            } : new()
+        };
+
+        _editContext = new EditContext(_newEntry);
+        _editContext.OnFieldChanged += FieldChange;
+        _isEditMode = true;
+        _isValidForm = true;
+
         await _addModal!.ShowAsync();
     }
 

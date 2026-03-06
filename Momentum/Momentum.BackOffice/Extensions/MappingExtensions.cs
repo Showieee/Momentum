@@ -19,9 +19,22 @@ public static class MappingExtensions
         };
     }
 
+    public static InsertAddressRequest ToRequest(this AddressEntryViewModel value)
+    {
+        return new InsertAddressRequest
+        {
+            StreetName = value.StreetName ?? string.Empty,
+            StreetNumber = value.StreetNumber ?? string.Empty,
+            City = value.City ?? string.Empty,
+            State = value.State ?? string.Empty,
+            Country = value.Country ?? string.Empty,
+            Email = value.Email ?? string.Empty,
+            PhoneNumber = value.PhoneNumber
+        };
+    }
+
     public static InsertPersonRequest ToRequest(this PersonEntryViewModel value)
     {
-
         return new InsertPersonRequest
         {
             FirstName = value.FirstName!,

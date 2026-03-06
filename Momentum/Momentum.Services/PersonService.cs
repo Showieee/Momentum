@@ -4,8 +4,6 @@ using Momentum.Persistance;
 using Momentum.Services.Extensions;
 using Momentum.Services.Interfaces;
 using Momentum.Services.Models;
-using System.Net;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Momentum.Services;
 
@@ -20,7 +18,7 @@ public class PersonService : IPersonService
 
     public async Task<List<PersonModel>> Get()
     {
-        var result = await DbContext.Set<PersonEntity>().AsNoTracking().ToListAsync();
+        var result = await DbContext.Set<PersonEntity>().AsNoTracking().Include(p=>p.Address).ToListAsync();
         return result.Select(a => a.ToModel()).ToList();
     }
 

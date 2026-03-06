@@ -12,6 +12,9 @@ public interface IPersonService
     [Post(Momentum.Shared.Routes.Persons.Insert)]
     Task<IApiResponse> InsertPerson([Body] InsertPersonRequest request, CancellationToken ct = default);
 
+    [Put(Momentum.Shared.Routes.Persons.Update)]
+    Task<IApiResponse> UpdatePerson(Guid id, [Body] UpdatePersonRequest request, CancellationToken ct = default);
+
     [Delete(Momentum.Shared.Routes.Persons.Delete)]
     Task<IApiResponse> DeletePerson(Guid id, CancellationToken ct = default);
 }

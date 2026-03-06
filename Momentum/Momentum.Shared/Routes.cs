@@ -6,6 +6,7 @@ public static class Routes
 	{
 		public const string Get = "/person";
 		public const string Insert = "/person";
+		public const string Update = "/person/{id}";
 		public const string Delete = "/person/{id}";
-    }
+	}
 }
