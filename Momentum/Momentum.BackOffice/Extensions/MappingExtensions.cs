@@ -1,11 +1,12 @@
-﻿using Momentum.BackOffice.Features.Persons;
+﻿using PersonsCompany = Momentum.BackOffice.Features.Companies;
+using PersonsFeature = Momentum.BackOffice.Features.Persons;
 using Momentum.Shared.Models.Requests;
 
 namespace Momentum.BackOffice.Extensions;
 
 public static class MappingExtensions
 {
-    public static InsertAddressRequest ToRequest(this AddressViewModel value)
+    public static InsertAddressRequest ToRequest(this PersonsFeature.AddressViewModel value)
     {
         return new InsertAddressRequest
         {
@@ -19,7 +20,7 @@ public static class MappingExtensions
         };
     }
 
-    public static InsertAddressRequest ToRequest(this AddressEntryViewModel value)
+    public static InsertAddressRequest ToRequest(this PersonsFeature.AddressEntryViewModel value)
     {
         return new InsertAddressRequest
         {
@@ -33,7 +34,7 @@ public static class MappingExtensions
         };
     }
 
-    public static InsertPersonRequest ToRequest(this PersonEntryViewModel value)
+    public static InsertPersonRequest ToRequest(this PersonsFeature.PersonEntryViewModel value)
     {
         return new InsertPersonRequest
         {
@@ -43,4 +44,35 @@ public static class MappingExtensions
             Address = value.Address?.ToRequest()
         };
     }
+
+    public static InsertCompanyRequest ToRequest(this PersonsCompany.CompanyEntryViewModel value)
+    {
+        return new InsertCompanyRequest
+        {
+            Name = value.Name!,
+            CUI = value.CUI!,
+            Address = value.Address != null && !IsEmptyCompanyAddress(value.Address) ? new()
+            {
+                StreetName = value.Address.StreetName ?? string.Empty,
+                StreetNumber = value.Address.StreetNumber ?? string.Empty,
+                City = value.Address.City ?? string.Empty,
+                State = value.Address.State ?? string.Empty,
+                Country = value.Address.Country ?? string.Empty,
+                Email = value.Address.Email ?? string.Empty,
+                PhoneNumber = value.Address.PhoneNumber
+            } : null
+        };
+    }
+
+    private static bool IsEmptyCompanyAddress(PersonsCompany.AddressEntryViewModel address)
+    {
+        return string.IsNullOrEmpty(address.StreetName) &&
+               string.IsNullOrEmpty(address.StreetNumber) &&
+               string.IsNullOrEmpty(address.City) &&
+               string.IsNullOrEmpty(address.State) &&
+               string.IsNullOrEmpty(address.Country) &&
+               string.IsNullOrEmpty(address.Email);
+    }
 }
+
+
