@@ -76,6 +76,7 @@
                         <option value="2">Birthday</option>
                         <option value="3">Teambuilding</option>
                         <option value="4">Festival</option>
+                        <option value="5">Other</option>
                     </InputSelect>
                     @if (_model.EventType == 0)
                     {
@@ -172,14 +173,7 @@
                                             <div class="product-actions">
                                                 @if (IsProductSelected(product.Id))
                                                 {
-                                                    <div class="product-quantity-input">
-                                                        <button class="btn-qty" @onclick="() => DecreaseQuantity(product.Id)">−</button>
-                                                        <input type="number" class="qty-value" 
-                                                               value="@GetSelectedProductQuantity(product.Id)" 
-                                                               @onchange="@((ChangeEventArgs e) => UpdateQuantity(product.Id, e.Value))"
-                                                               min="1" />
-                                                        <button class="btn-qty" @onclick="() => IncreaseQuantity(product.Id)">+</button>
-                                                    </div>
+                                                  
                                                     <button class="btn btn-danger btn-sm" @onclick="() => RemoveProduct(product.Id)">
                                                         Remove
                                                     </button>
@@ -208,7 +202,7 @@
                             {
                                 <div class="summary-row">
                                     <span class="summary-name">@product.ProductName</span>
-                                    <span class="summary-price">@product.TotalPrice.ToString("N0") RON</span>
+                                    <span class="summary-price">@product.UnitPrice.ToString("N0") RON</span>
                                 </div>
                             }
                         </div>
@@ -256,8 +250,7 @@
                             {
                                 <div class="review-product-item">
                                     <span>@product.ProductName</span>
-                                    <span>x @product.Quantity</span>
-                                    <span class="fw-bold">@product.TotalPrice.ToString("N0") RON</span>
+                                    <span class="fw-bold">@product.UnitPrice.ToString("N0") RON</span>
                                 </div>
                             }
                         </div>

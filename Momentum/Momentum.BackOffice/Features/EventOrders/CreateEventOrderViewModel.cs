@@ -20,7 +20,7 @@ public class CreateEventOrderViewModel
     public List<SelectedProductViewModel> SelectedProducts { get; set; } = [];
 
     // Summary
-    public decimal TotalPrice => SelectedProducts.Sum(p => p.TotalPrice);
+    public decimal TotalPrice => SelectedProducts.Sum(p => p.UnitPrice);
 }
 
 public class PersonOptionViewModel
@@ -54,6 +54,4 @@ public class SelectedProductViewModel
     public Guid ProductId { get; set; }
     public string ProductName { get; set; } = string.Empty;
     public decimal UnitPrice { get; set; }
-    public decimal Quantity { get; set; } = 1;
-    public decimal TotalPrice => UnitPrice * Quantity;
 }

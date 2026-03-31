@@ -76,11 +76,8 @@ public partial class CreateEventOrderPage : IDisposable
                     })
                     .OrderBy(p => p.Type)
                     .ToList();
-
-                // Build product groups
                 BuildProductGroups();
 
-                // Filter locations for step 3
                 _model.AvailableLocations = _model.AvailableProducts
                     .Where(p => p.Type == 1)
                     .Select(p => new LocationOptionViewModel
@@ -89,7 +86,7 @@ public partial class CreateEventOrderPage : IDisposable
                         Name = p.Name,
                         Description = p.Description,
                         Price = p.Price,
-                        CompanyName = "Event Venue" // This should come from the API response with company info
+                        CompanyName = "Event Venue" 
                     })
                     .ToList();
             }
@@ -99,7 +96,7 @@ public partial class CreateEventOrderPage : IDisposable
     private void BuildProductGroups()
     {
         _productGroups = _model.AvailableProducts
-            .Where(p => p.Type != 1) // Exclude locations from product step
+            .Where(p => p.Type != 1)
             .GroupBy(p => p.TypeName)
             .OrderBy(g => g.Key)
             .Select(g => new ProductGroupViewModel
@@ -193,10 +190,6 @@ public partial class CreateEventOrderPage : IDisposable
         return _model.SelectedProducts.Any(p => p.ProductId == productId);
     }
 
-    private decimal GetSelectedProductQuantity(Guid productId)
-    {
-        return _model.SelectedProducts.FirstOrDefault(p => p.ProductId == productId)?.Quantity ?? 1;
-    }
 
     private void AddProduct(ProductSelectionViewModel product)
     {
@@ -205,7 +198,6 @@ public partial class CreateEventOrderPage : IDisposable
             ProductId = product.Id,
             ProductName = product.Name,
             UnitPrice = product.Price,
-            Quantity = 1
         };
         _model.SelectedProducts.Add(selectedProduct);
     }
@@ -216,36 +208,6 @@ public partial class CreateEventOrderPage : IDisposable
         if (product != null)
         {
             _model.SelectedProducts.Remove(product);
-        }
-    }
-
-    private void IncreaseQuantity(Guid productId)
-    {
-        var product = _model.SelectedProducts.FirstOrDefault(p => p.ProductId == productId);
-        if (product != null)
-        {
-            product.Quantity++;
-        }
-    }
-
-    private void DecreaseQuantity(Guid productId)
-    {
-        var product = _model.SelectedProducts.FirstOrDefault(p => p.ProductId == productId);
-        if (product != null && product.Quantity > 1)
-        {
-            product.Quantity--;
-        }
-    }
-
-    private void UpdateQuantity(Guid productId, object? value)
-    {
-        if (value != null && decimal.TryParse(value.ToString(), out var quantity) && quantity > 0)
-        {
-            var product = _model.SelectedProducts.FirstOrDefault(p => p.ProductId == productId);
-            if (product != null)
-            {
-                product.Quantity = quantity;
-            }
         }
     }
 
@@ -269,9 +231,6 @@ public partial class CreateEventOrderPage : IDisposable
                 return;
             }
 
-            // Get event ID from response headers or assume it's created
-            // Since the API returns IApiResponse with no content, we need to get the event ID differently
-            // For now, load events and get the latest one
             var eventsResponse = await EventService.GetEvents();
             if (eventsResponse.IsSuccessStatusCode == false || eventsResponse.Content == null)
             {
@@ -291,13 +250,11 @@ public partial class CreateEventOrderPage : IDisposable
             {
                 PersonId = _model.SelectedPersonId,
                 EventId = createdEvent.Id,
-                Products = _model.SelectedProducts
+                Products = [.. _model.SelectedProducts
                     .Select(p => new BackOffice.Services.EventOrderProductRequest
                     {
-                        ProductId = p.ProductId,
-                        Quantity = (int)p.Quantity
-                    })
-                    .ToList()
+                        ProductId = p.ProductId
+                    })]
             };
 
             var result = await EventOrderService.CreateEventOrder(orderRequest);

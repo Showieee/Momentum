@@ -6,5 +6,6 @@ public enum EventType
     Wedding = 1,
     Birthday = 2,
     Teambuilding = 3,
-    Festival = 4
+    Festival = 4,
+    Other = 5
 }
