@@ -7,5 +7,7 @@ public enum ProductType
     Food = 2,
     Photography = 3,
     Music = 4,
-    Videography = 5
+    Videography = 5,
+    Decoration = 6
 }
+

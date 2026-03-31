@@ -1,4 +1,5 @@
 using Momentum.Api.Extensions;
+using Momentum.Services.Seeding;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 var app = builder.Build();
+
+// Seed the database
+await MomentumDbSeeding.Run(app.Services);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

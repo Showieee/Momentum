@@ -61,6 +61,9 @@ public partial class MainLayout : IToastNotificationComponent
 		{
 			_navItems.Add(new NavItem { Id = "10", Href = PageRoutes.Persons, IconName = IconName.Gear, Text = "Persons" });
 			_navItems.Add(new NavItem { Id = "11", Href = PageRoutes.Companies, IconName = IconName.Building, Text = "Companies" });
+			_navItems.Add(new NavItem { Id = "12", Href = PageRoutes.Products, IconName = IconName.BoxSeam, Text = "Products" });
+			_navItems.Add(new NavItem { Id = "13", Href = PageRoutes.Events, IconName = IconName.Calendar3, Text = "Events" });
+			_navItems.Add(new NavItem { Id = "14", Href = PageRoutes.CreateEventOrder, IconName = IconName.PlusCircle, Text = "Create Event Order" });
 		}
 	}
 

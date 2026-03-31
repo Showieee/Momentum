@@ -6,6 +6,9 @@ internal class PageRoutes
 	public const string UserClaims = "user-claims";
 	public const string Persons = "persons";
 	public const string Companies = "companies";
+	public const string Products = "products";
+	public const string Events = "events";
+	public const string CreateEventOrder = "create-event-order";
 
 	internal class Authentication
 	{

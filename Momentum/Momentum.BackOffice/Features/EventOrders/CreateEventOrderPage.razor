@@ -1,0 +1,247 @@
+@inherits ExtendedComponentBase
+@attribute [Authorize(Roles = "Administrator, Manager")]
+
+<div class="container mt-4">
+    <h2>Create Event Order</h2>
+
+    <!-- Progress Bar -->
+    <div class="progress mb-4">
+        <div class="progress-bar" role="progressbar" style="width: @((CurrentStep + 1) * 25)%"
+             aria-valuenow="@(CurrentStep + 1)" aria-valuemin="1" aria-valuemax="4"></div>
+    </div>
+
+    <div class="mb-3">
+        <small class="text-muted">Step @(CurrentStep + 1) of 4</small>
+    </div>
+
+    <!-- Step 1: Select Person -->
+    <div class="card mt-4" style="display: @(CurrentStep == 0 ? "block" : "none")">
+        <div class="card-header">
+            <h5>Step 1: Select Person</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label">Who is this event for?</label>
+                <InputSelect class="form-control" @bind-value="_model.SelectedPersonId" @onchange="OnPersonSelected">
+                    <option value="">-- Select a person --</option>
+                    @foreach (var person in _model.AvailablePersons)
+                    {
+                        <option value="@person.Id">@person.FullName (CNP: @person.CNP)</option>
+                    }
+                </InputSelect>
+                @if (_model.SelectedPersonId == Guid.Empty)
+                {
+                    <div class="text-danger small mt-2">Please select a person</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: Fill Event Data -->
+    <div class="card mt-4" style="display: @(CurrentStep == 1 ? "block" : "none")">
+        <div class="card-header">
+            <h5>Step 2: Event Details</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label">Event Name</label>
+                <InputText class="form-control" @bind-value="_model.EventName" placeholder="Enter event name" />
+                @if (string.IsNullOrWhiteSpace(_model.EventName))
+                {
+                    <div class="text-danger small mt-2">Event name is required</div>
+                }
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Event Type</label>
+                <InputSelect class="form-control" @bind-value="_model.EventType">
+                    <option value="0">Select a type...</option>
+                    <option value="1">Wedding</option>
+                    <option value="2">Birthday</option>
+                    <option value="3">Teambuilding</option>
+                    <option value="4">Festival</option>
+                </InputSelect>
+                @if (_model.EventType == 0)
+                {
+                    <div class="text-danger small mt-2">Event type is required</div>
+                }
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Date (YYYY-MM-DD)</label>
+                <InputText type="date" class="form-control" @bind-value="_model.EventDate" />
+                @if (string.IsNullOrWhiteSpace(_model.EventDate))
+                {
+                    <div class="text-danger small mt-2">Event date is required</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Select Products -->
+    <div class="card mt-4" style="display: @(CurrentStep == 2 ? "block" : "none")">
+        <div class="card-header">
+            <h5>Step 3: Select Products</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                @foreach (var product in _model.AvailableProducts)
+                {
+                    <div class="col-md-6 mb-3">
+                        <div class="card product-card">
+                            <div class="card-body">
+                                <h6 class="card-title">@product.Name</h6>
+                                <p class="card-text small">@product.TypeName</p>
+                                @if (!string.IsNullOrEmpty(product.Description))
+                                {
+                                    <p class="card-text small text-muted">@product.Description</p>
+                                }
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-primary">@product.Price.ToString("C")</span>
+                                    <button class="btn btn-sm @(IsProductSelected(product.Id) ? "btn-success" : "btn-outline-success")"
+                                            @onclick="() => ToggleProductSelection(product)">
+                                        @if (IsProductSelected(product.Id))
+                                        {
+                                            <span><i class="bi bi-check-circle"></i> Added</span>
+                                        }
+                                        else
+                                        {
+                                            <span><i class="bi bi-plus-circle"></i> Add</span>
+                                        }
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @if (_model.SelectedProducts.Count > 0)
+            {
+                <div class="mt-4">
+                    <h6>Selected Products:</h6>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var product in _model.SelectedProducts)
+                            {
+                                <tr>
+                                    <td>@product.ProductName</td>
+                                    <td>@product.UnitPrice.ToString("C")</td>
+                                    <td>
+                                        <InputNumber class="form-control form-control-sm" @bind-value="product.Quantity" min="1" step="1" />
+                                    </td>
+                                    <td>@product.TotalPrice.ToString("C")</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm" @onclick="() => RemoveProduct(product.ProductId)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Step 4: Review and Confirm -->
+    <div class="card mt-4" style="display: @(CurrentStep == 3 ? "block" : "none")">
+        <div class="card-header">
+            <h5>Step 4: Review Order</h5>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <h6>Person:</h6>
+                    <p>@((_selectedPerson?.FirstName ?? "") + " " + (_selectedPerson?.LastName ?? ""))</p>
+                    <small class="text-muted">CNP: @(_selectedPerson?.CNP ?? "Not selected")</small>
+                </div>
+                <div class="col-md-6">
+                    <h6>Event:</h6>
+                    <p>@(_model.EventName ?? "Not specified")</p>
+                    <small class="text-muted">Date: @(_model.EventDate ?? "Not specified")</small>
+                </div>
+            </div>
+
+            @if (_model.SelectedProducts.Count > 0)
+            {
+                <h6>Products:</h6>
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var product in _model.SelectedProducts)
+                        {
+                            <tr>
+                                <td>@product.ProductName</td>
+                                <td>@product.Quantity</td>
+                                <td>@product.UnitPrice.ToString("C")</td>
+                                <td>@product.TotalPrice.ToString("C")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            <div class="alert alert-info mt-3">
+                <h5>Total Price: <strong>@_model.TotalPrice.ToString("C")</strong></h5>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="mt-4 mb-4">
+        <button class="btn btn-secondary me-2" @onclick="PreviousStep" disabled="@(CurrentStep == 0)">
+            <i class="bi bi-arrow-left"></i> Previous
+        </button>
+        
+        @if (CurrentStep < 3)
+        {
+            <button class="btn btn-primary" @onclick="NextStep" disabled="@(!CanProceedToNext())">
+                Next <i class="bi bi-arrow-right"></i>
+            </button>
+        }
+        else
+        {
+            <button class="btn btn-success" @onclick="SubmitOrder" disabled="@(_isSubmitting)">
+                @if (_isSubmitting)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    <span>Creating</span>
+                }
+                else
+                {
+                    <span><i class="bi bi-check-circle"></i> Create Order</span>
+                }
+            </button>
+        }
+    </div>
+</div>
+
+<style>
+    .product-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .product-card:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
+    }
+</style>

@@ -74,6 +74,20 @@ public static class MappingExtensions
         };
     }
 
+    public static Models.CreateEventOrderRequest ToModel(this Models.CreateEventOrderRequest value)
+    {
+        return new Models.CreateEventOrderRequest
+        {
+            PersonId = value.PersonId,
+            EventId = value.EventId,
+            Products = value.Products.Select(p => new Models.EventOrderProductRequest
+            {
+                ProductId = p.ProductId,
+                Quantity = p.Quantity
+            }).ToList()
+        };
+    }
+
     public static ProductModel ToModel(this UpdateProductRequest value)
     {
         return new ProductModel
