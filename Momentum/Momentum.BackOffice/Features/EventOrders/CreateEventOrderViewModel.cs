@@ -11,7 +11,11 @@ public class CreateEventOrderViewModel
     public string? EventName { get; set; }
     public string? EventDate { get; set; }
 
-    // Step 3: Product Selection
+    // Step 3: Location Selection
+    public Guid SelectedLocationId { get; set; }
+    public List<LocationOptionViewModel> AvailableLocations { get; set; } = [];
+
+    // Step 4: Product Selection
     public List<ProductSelectionViewModel> AvailableProducts { get; set; } = [];
     public List<SelectedProductViewModel> SelectedProducts { get; set; } = [];
 
@@ -24,6 +28,15 @@ public class PersonOptionViewModel
     public Guid Id { get; set; }
     public string FullName { get; set; } = string.Empty;
     public string CNP { get; set; } = string.Empty;
+}
+
+public class LocationOptionViewModel
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public decimal Price { get; set; }
+    public string CompanyName { get; set; } = string.Empty;
 }
 
 public class ProductSelectionViewModel

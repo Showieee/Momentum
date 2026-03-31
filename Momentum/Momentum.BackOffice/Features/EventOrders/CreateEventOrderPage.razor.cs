@@ -13,7 +13,10 @@ public partial class CreateEventOrderPage : IDisposable
     private int CurrentStep { get; set; }
     private CreateEventOrderViewModel _model = new();
     private PersonDetail? _selectedPerson;
+    private LocationOptionViewModel? _selectedLocation;
     private bool _isSubmitting;
+    private HashSet<string> _expandedCategories = [];
+    private List<ProductGroupViewModel> _productGroups = [];
 
     #endregion // Fields
 
@@ -32,6 +35,7 @@ public partial class CreateEventOrderPage : IDisposable
     protected override async Task OnInitializedAsync()
     {
         await LoadData();
+        _expandedCategories.Add("Location (Accommodation)");
     }
 
     #endregion // Lifecycle Methods
@@ -70,9 +74,41 @@ public partial class CreateEventOrderPage : IDisposable
                         Type = p.Type,
                         TypeName = GetProductTypeName(p.Type)
                     })
+                    .OrderBy(p => p.Type)
+                    .ToList();
+
+                // Build product groups
+                BuildProductGroups();
+
+                // Filter locations for step 3
+                _model.AvailableLocations = _model.AvailableProducts
+                    .Where(p => p.Type == 1)
+                    .Select(p => new LocationOptionViewModel
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Description = p.Description,
+                        Price = p.Price,
+                        CompanyName = "Event Venue" // This should come from the API response with company info
+                    })
                     .ToList();
             }
         });
+    }
+
+    private void BuildProductGroups()
+    {
+        _productGroups = _model.AvailableProducts
+            .Where(p => p.Type != 1) // Exclude locations from product step
+            .GroupBy(p => p.TypeName)
+            .OrderBy(g => g.Key)
+            .Select(g => new ProductGroupViewModel
+            {
+                TypeName = g.Key,
+                Count = g.Count(),
+                Products = g.OrderBy(p => p.Name).ToList()
+            })
+            .ToList();
     }
 
     private string GetProductTypeName(int type)
@@ -94,38 +130,61 @@ public partial class CreateEventOrderPage : IDisposable
         return CurrentStep switch
         {
             0 => _model.SelectedPersonId != Guid.Empty,
-            1 => !string.IsNullOrWhiteSpace(_model.EventName) && 
-                 _model.EventType > 0 && 
+            1 => !string.IsNullOrWhiteSpace(_model.EventName) &&
+                 _model.EventType > 0 &&
                  !string.IsNullOrWhiteSpace(_model.EventDate),
-            2 => _model.SelectedProducts.Count > 0,
-            3 => true,
-            _ => false
+            2 => _model.SelectedLocationId != Guid.Empty,
+            3 => _model.SelectedProducts.Count > 0,
+            _ => true
         };
     }
 
-    private void LoadSelectedPersonDetails()
+    private void NextStep()
     {
-        var selectedPerson = _model.AvailablePersons
-            .FirstOrDefault(p => p.Id == _model.SelectedPersonId);
-
-        if (selectedPerson != null)
+        if (CanProceedToNext())
         {
-            var nameParts = selectedPerson.FullName.Split(' ');
-            _selectedPerson = new PersonDetail 
-            { 
-                Id = selectedPerson.Id, 
-                FirstName = nameParts.FirstOrDefault() ?? "", 
-                LastName = nameParts.Length > 1 ? string.Join(" ", nameParts.Skip(1)) : "",
-                CNP = selectedPerson.CNP
-            };
+            CurrentStep++;
+            StateHasChanged();
         }
     }
 
-    private void OnPersonSelected(ChangeEventArgs e)
+    private void PreviousStep()
     {
-        if (Guid.TryParse(e.Value?.ToString(), out var personId))
+        if (CurrentStep > 0)
         {
-            _model.SelectedPersonId = personId;
+            CurrentStep--;
+            StateHasChanged();
+        }
+    }
+
+    private void SelectPerson(PersonOptionViewModel person)
+    {
+        _model.SelectedPersonId = person.Id;
+        var response = new PersonDetail
+        {
+            Id = person.Id,
+            FirstName = person.FullName.Split(' ')[0],
+            LastName = string.Join(" ", person.FullName.Split(' ').Skip(1)),
+            CNP = person.CNP
+        };
+        _selectedPerson = response;
+    }
+
+    private void SelectLocation(LocationOptionViewModel location)
+    {
+        _model.SelectedLocationId = location.Id;
+        _selectedLocation = location;
+    }
+
+    private void ToggleCategoryExpanded(string categoryName)
+    {
+        if (_expandedCategories.Contains(categoryName))
+        {
+            _expandedCategories.Remove(categoryName);
+        }
+        else
+        {
+            _expandedCategories.Add(categoryName);
         }
     }
 
@@ -134,143 +193,142 @@ public partial class CreateEventOrderPage : IDisposable
         return _model.SelectedProducts.Any(p => p.ProductId == productId);
     }
 
-    private void ToggleProductSelection(ProductSelectionViewModel product)
+    private decimal GetSelectedProductQuantity(Guid productId)
     {
-        if (IsProductSelected(product.Id))
+        return _model.SelectedProducts.FirstOrDefault(p => p.ProductId == productId)?.Quantity ?? 1;
+    }
+
+    private void AddProduct(ProductSelectionViewModel product)
+    {
+        var selectedProduct = new SelectedProductViewModel
         {
-            RemoveProduct(product.Id);
-        }
-        else
-        {
-            _model.SelectedProducts.Add(new SelectedProductViewModel
-            {
-                ProductId = product.Id,
-                ProductName = product.Name,
-                UnitPrice = product.Price,
-                Quantity = 1
-            });
-        }
+            ProductId = product.Id,
+            ProductName = product.Name,
+            UnitPrice = product.Price,
+            Quantity = 1
+        };
+        _model.SelectedProducts.Add(selectedProduct);
     }
 
     private void RemoveProduct(Guid productId)
     {
-        _model.SelectedProducts.RemoveAll(p => p.ProductId == productId);
-    }
-
-    private async Task NextStep()
-    {
-        if (CanProceedToNext())
+        var product = _model.SelectedProducts.FirstOrDefault(p => p.ProductId == productId);
+        if (product != null)
         {
-            if (CurrentStep == 2)
-            {
-                LoadSelectedPersonDetails();
-            }
-            CurrentStep++;
-            await InvokeAsync(StateHasChanged);
+            _model.SelectedProducts.Remove(product);
         }
     }
 
-    private async Task PreviousStep()
+    private void IncreaseQuantity(Guid productId)
     {
-        if (CurrentStep > 0)
+        var product = _model.SelectedProducts.FirstOrDefault(p => p.ProductId == productId);
+        if (product != null)
         {
-            CurrentStep--;
-            await InvokeAsync(StateHasChanged);
+            product.Quantity++;
+        }
+    }
+
+    private void DecreaseQuantity(Guid productId)
+    {
+        var product = _model.SelectedProducts.FirstOrDefault(p => p.ProductId == productId);
+        if (product != null && product.Quantity > 1)
+        {
+            product.Quantity--;
+        }
+    }
+
+    private void UpdateQuantity(Guid productId, object? value)
+    {
+        if (value != null && decimal.TryParse(value.ToString(), out var quantity) && quantity > 0)
+        {
+            var product = _model.SelectedProducts.FirstOrDefault(p => p.ProductId == productId);
+            if (product != null)
+            {
+                product.Quantity = quantity;
+            }
         }
     }
 
     private async Task SubmitOrder()
     {
-        if (!CanProceedToNext())
-        {
-            await ShowError("Please complete all required steps");
-            return;
-        }
-
         _isSubmitting = true;
-
-        try
+        await SafeExecute(async () =>
         {
-            await SafeExecute(async () =>
+            // First create the event
+            var eventCreateRequest = new InsertEventRequest
             {
-                // First, create the event
-                var eventRequest = new InsertEventRequest
-                {
-                    Type = _model.EventType,
-                    Name = _model.EventName,
-                    Date = _model.EventDate
-                };
+                Type = _model.EventType,
+                Name = _model.EventName ?? "",
+                Date = _model.EventDate ?? ""
+            };
 
-                var eventResponse = await EventService.InsertEvent(eventRequest);
-                if (eventResponse.Error is not null)
-                {
-                    await ShowException(eventResponse.Error);
-                    return;
-                }
+            var eventResponse = await EventService.InsertEvent(eventCreateRequest);
+            if (eventResponse.IsSuccessStatusCode == false)
+            {
+                await ShowException(new Exception("Failed to create event"));
+                return;
+            }
 
-                // Get the created event to retrieve its ID
-                var eventsListResponse = await EventService.GetEvents();
-                if (eventsListResponse.Error is not null || eventsListResponse.Content is null)
-                {
-                    await ShowException(eventResponse.Error);
-                    return;
-                }
+            // Get event ID from response headers or assume it's created
+            // Since the API returns IApiResponse with no content, we need to get the event ID differently
+            // For now, load events and get the latest one
+            var eventsResponse = await EventService.GetEvents();
+            if (eventsResponse.IsSuccessStatusCode == false || eventsResponse.Content == null)
+            {
+                await ShowException(new Exception("Failed to retrieve event"));
+                return;
+            }
 
-                // Get the most recently created event (by matching name and date)
-                var createdEvent = eventsListResponse.Content
-                    .FirstOrDefault(e => e.Name == _model.EventName && e.Date == _model.EventDate);
+            var createdEvent = eventsResponse.Content.FirstOrDefault();
+            if (createdEvent == null)
+            {
+                await ShowException(new Exception("No event found after creation"));
+                return;
+            }
 
-                if (createdEvent is null)
-                {
-                    await ShowError("Failed to retrieve created event");
-                    return;
-                }
+            // Then create the event order
+            var orderRequest = new CreateEventOrderRequest
+            {
+                PersonId = _model.SelectedPersonId,
+                EventId = createdEvent.Id,
+                Products = _model.SelectedProducts
+                    .Select(p => new BackOffice.Services.EventOrderProductRequest
+                    {
+                        ProductId = p.ProductId,
+                        Quantity = (int)p.Quantity
+                    })
+                    .ToList()
+            };
 
-                // Now create the event order with the created event
-                var orderRequest = new CreateEventOrderRequest
-                {
-                    PersonId = _model.SelectedPersonId,
-                    EventId = createdEvent.Id,
-                    Products = _model.SelectedProducts
-                        .Select(p => new EventOrderProductRequest
-                        {
-                            ProductId = p.ProductId,
-                            Quantity = p.Quantity
-                        })
-                        .ToList()
-                };
-
-                var orderResponse = await EventOrderService.CreateEventOrder(orderRequest);
-
-                if (orderResponse.Error is not null)
-                {
-                    await ShowException(orderResponse.Error);
-                    return;
-                }
-
+            var result = await EventOrderService.CreateEventOrder(orderRequest);
+            if (result.IsSuccessStatusCode)
+            {
                 await ShowSuccess("Event order created successfully!");
-                NavigationManager.NavigateTo($"/{PageRoutes.Events}");
-            });
-        }
-        finally
-        {
-            _isSubmitting = false;
-        }
-    }
-
-    private async Task ShowError(string message)
-    {
-        await InvokeAsync(() => Task.CompletedTask);
+                NavigationManager.NavigateTo(PageRoutes.Events);
+            }
+            else
+            {
+                await ShowException(new Exception("Failed to create event order"));
+            }
+        });
+        _isSubmitting = false;
     }
 
     #endregion // Private Methods
 
-    #region IDisposable
+    #region Nested Classes
+
+    public class ProductGroupViewModel
+    {
+        public string TypeName { get; set; } = string.Empty;
+        public int Count { get; set; }
+        public List<ProductSelectionViewModel> Products { get; set; } = [];
+    }
+
+    #endregion // Nested Classes
 
     public void Dispose()
     {
         // Cleanup if needed
     }
-
-    #endregion // IDisposable
 }
