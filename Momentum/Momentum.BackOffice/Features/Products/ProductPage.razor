@@ -36,9 +36,13 @@ else
             {
                 <tr>
                     <td>@entry.Name</td>
-                    <td>@entry.Type</td>
-                    <td>@entry.CompanyName</td>
-                    <td>@entry.Price.ToString()</td>
+                    <td>
+                        <span title="@entry.CompanyName" class="badge bg-info">@GetProductTypeString(entry.Type)</span>
+                    </td>
+                    <td>
+                        <span title="Type: @GetProductTypeString(entry.Type)">@entry.CompanyName</span>
+                    </td>
+                    <td>@entry.Price.ToString("N0") RON</td>
                     <td>
                         <button class="btn btn-warning btn-sm me-2" @onclick="() => OpenEditModal(entry.Id)">
                             <i class="bi bi-pencil"></i> Edit

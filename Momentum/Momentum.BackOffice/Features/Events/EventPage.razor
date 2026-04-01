@@ -246,6 +246,14 @@ else
                                 </div>
                             }
                         </div>
+
+                        <!-- Edit Modal Total Price -->
+                        <div class="edit-modal-total-section mt-4">
+                            <div class="edit-modal-total-row">
+                                <span class="edit-total-label">Total Price:</span>
+                                <span class="edit-total-amount">@GetEditModalTotalPrice().ToString("N0") RON</span>
+                            </div>
+                        </div>
                     </div>
                 }
             </div>
@@ -490,6 +498,40 @@ else
     .event-details-section .section-title {
         margin-bottom: 16px;
         padding-bottom: 12px;
+        border-bottom: 1px solid #d1d5db;
+    }
+
+    .venue-products-section {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        padding-top: 16px;
+    }
+
+    .edit-modal-total-section {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        padding: 16px;
+        border-radius: 8px;
+        margin-top: 16px;
+    }
+
+    .edit-modal-total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .edit-total-label {
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .edit-total-amount {
+        color: white;
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
         border-bottom: 1px solid #d1d5db;
     }
 

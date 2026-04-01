@@ -72,7 +72,8 @@ public partial class CreateEventOrderPage : IDisposable
                         Description = p.Description,
                         Price = p.Price,
                         Type = p.Type,
-                        TypeName = GetProductTypeName(p.Type)
+                        TypeName = GetProductTypeName(p.Type),
+                        CompanyName = p.Company?.Name
                     })
                     .OrderBy(p => p.Type)
                     .ToList();

@@ -258,6 +258,20 @@ public partial class ProductPage : IDisposable
 		});
 	}
 
+	private string GetProductTypeString(int type)
+	{
+		return type switch
+		{
+			1 => "Location (Accommodation)",
+			2 => "Food",
+			3 => "Photography",
+			4 => "Music",
+			5 => "Videography",
+			6 => "Decoration",
+			_ => "Unknown"
+		};
+	}
+
 	#endregion // Private Methods
 
 	#region IDispose Members

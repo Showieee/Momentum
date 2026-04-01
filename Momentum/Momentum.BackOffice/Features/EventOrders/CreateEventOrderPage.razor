@@ -222,7 +222,7 @@
                                 <div class="category-products">
                                     @foreach (var product in group.Products)
                                     {
-                                        <div class="product-item">
+                                        <div class="product-item" title="Company: @product.CompanyName">
                                             <div class="product-info">
                                                 <h6 class="product-name">@product.Name</h6>
                                                 @if (!string.IsNullOrEmpty(product.Description))
@@ -236,7 +236,7 @@
                                             <div class="product-actions">
                                                 @if (IsProductSelected(product.Id))
                                                 {
-                                                  
+
                                                     <button class="btn btn-danger btn-sm" @onclick="() => RemoveProduct(product.Id)">
                                                         Remove
                                                     </button>

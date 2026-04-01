@@ -47,6 +47,7 @@ public class ProductSelectionViewModel
     public decimal Price { get; set; }
     public int Type { get; set; }
     public string TypeName { get; set; } = string.Empty;
+    public string? CompanyName { get; set; }
 }
 
 public class SelectedProductViewModel

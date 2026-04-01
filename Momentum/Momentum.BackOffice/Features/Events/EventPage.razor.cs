@@ -69,6 +69,36 @@ public partial class EventPage : IDisposable
 		};
 	}
 
+	private decimal GetEditModalTotalPrice()
+	{
+		if (_editEventEntry == null)
+			return 0m;
+
+		decimal total = 0m;
+
+		// Add location price
+		if (_editEventEntry.SelectedLocationId.HasValue && _editEventEntry.SelectedLocationId != Guid.Empty)
+		{
+			var location = _availableLocationsForEdit.FirstOrDefault(l => l.Id == _editEventEntry.SelectedLocationId);
+			if (location != null)
+			{
+				total += location.Price;
+			}
+		}
+
+		// Add selected products prices
+		foreach (var productId in _editEventEntry.SelectedProductIds)
+		{
+			var product = _availableProductsForEdit.FirstOrDefault(p => p.Id == productId);
+			if (product != null)
+			{
+				total += product.Price;
+			}
+		}
+
+		return total;
+	}
+
 	protected override async Task OnInitializedAsync()
 	{
 		_newEntry = new EventEntryViewModel();
