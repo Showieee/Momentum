@@ -7,8 +7,11 @@ public interface IEventService
     [Get(Momentum.Shared.Routes.Events.Get)]
     Task<IApiResponse<List<GetEventResponse>>> GetEvents(CancellationToken ct = default);
 
+    [Get(Momentum.Shared.Routes.Events.GetById)]
+    Task<IApiResponse<GetEventResponse>> GetById(Guid id, CancellationToken ct = default);
+
     [Post(Momentum.Shared.Routes.Events.Insert)]
-    Task<IApiResponse> InsertEvent([Body] InsertEventRequest request, CancellationToken ct = default);
+    Task<IApiResponse<Guid>> InsertEvent([Body] InsertEventRequest request, CancellationToken ct = default);
 
     [Put(Momentum.Shared.Routes.Events.Update)]
     Task<IApiResponse> UpdateEvent(Guid id, [Body] UpdateEventRequest request, CancellationToken ct = default);

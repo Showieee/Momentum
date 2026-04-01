@@ -225,25 +225,23 @@ public partial class CreateEventOrderPage : IDisposable
             };
 
             var eventResponse = await EventService.InsertEvent(eventCreateRequest);
-            if (eventResponse.IsSuccessStatusCode == false)
+            if (eventResponse.IsSuccessStatusCode == false || eventResponse.Content == null)
             {
                 await ShowException(new Exception("Failed to create event"));
                 return;
             }
 
-            var eventsResponse = await EventService.GetEvents();
-            if (eventsResponse.IsSuccessStatusCode == false || eventsResponse.Content == null)
+            var createdEventId = eventResponse.Content;
+
+            // Verify the event was created by fetching it
+            var eventDetail = await EventService.GetById(createdEventId);
+            if (eventDetail.IsSuccessStatusCode == false || eventDetail.Content == null)
             {
                 await ShowException(new Exception("Failed to retrieve event"));
                 return;
             }
 
-            var createdEvent = eventsResponse.Content.FirstOrDefault();
-            if (createdEvent == null)
-            {
-                await ShowException(new Exception("No event found after creation"));
-                return;
-            }
+            var createdEvent = eventDetail.Content;
 
             // Then create the event order
             var orderRequest = new CreateEventOrderRequest

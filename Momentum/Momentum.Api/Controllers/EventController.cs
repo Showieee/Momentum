@@ -46,13 +46,14 @@ public class EventController : ControllerBase
 
 
     [HttpPost(Name = "InsertEvent")]
-    public async Task Insert([FromBody] InsertEventRequest eventModel)
+    public async Task<ActionResult<Guid>> Insert([FromBody] InsertEventRequest eventModel)
     {
         _logger.LogInformation("I am in InsertEvent");
 
-        await _eventService.Insert(eventModel.ToModel());
+        var eventId = await _eventService.Insert(eventModel.ToModel());
 
         _logger.LogInformation("Insert done");
+        return Ok(eventId);
     }
 
     [HttpPut("{id}", Name = "UpdateEvent")]

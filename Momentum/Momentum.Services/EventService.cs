@@ -30,13 +30,15 @@ public class EventService : IEventService
         return result?.ToModel();
     }
 
-    public async Task Insert(EventModel eventModel)
+    public async Task<Guid> Insert(EventModel eventModel)
     {
         var entity = eventModel.ToEntity();
 
         DbContext.Add(entity);
 
         await DbContext.SaveChangesAsync();
+
+        return entity.Id;
     }
 
     public async Task Update(Guid id, EventModel eventModel)

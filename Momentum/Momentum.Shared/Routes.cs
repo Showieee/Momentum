@@ -29,6 +29,7 @@ public static class Routes
 	public static class Events
 	{
 		public const string Get = "/event";
+		public const string GetById = "/event/{id}";
 		public const string Insert = "/event";
 		public const string Update = "/event/{id}";
 		public const string Delete = "/event/{id}";

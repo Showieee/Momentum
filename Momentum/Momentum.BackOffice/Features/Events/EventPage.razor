@@ -35,9 +35,12 @@ else
             {
                 <tr>
                     <td>@entry.Name</td>
-                    <td>@entry.Type</td>
+                    <td>@GetEventTypeString(entry.Type)</td>
                     <td>@entry.Date</td>
                     <td>
+                        <button class="btn btn-info btn-sm me-2" @onclick="() => OpenInfoModal(entry.Id)" title="View Event Info">
+                            <i class="bi bi-info-circle"></i> Info
+                        </button>
                         <button class="btn btn-warning btn-sm me-2" @onclick="() => OpenEditModal(entry.Id)">
                             <i class="bi bi-pencil"></i> Edit
                         </button>
@@ -99,3 +102,400 @@ else
         <button class="btn btn-danger" @onclick="ConfirmDeleteEvent">Yes, Delete</button>
     </FooterTemplate>
 </Modal>
+
+<!-- Event Info Modal -->
+<Modal @ref="_infoModal" title="Event Information" IsVerticallyCentered="true" Size="ModalSize.Large">
+    <BodyTemplate>
+        @if (_selectedEvent.Id != Guid.Empty)
+        {
+            <div class="event-info-container">
+                <div class="info-section">
+                    <h6 class="info-section-title">Event Details</h6>
+                    <div class="info-row">
+                        <span class="info-label">Name:</span>
+                        <span class="info-value">@_selectedEvent.Name</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Type:</span>
+                        <span class="info-value">@GetEventTypeString(_selectedEvent.Type)</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Date:</span>
+                        <span class="info-value">@_selectedEvent.Date</span>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(_selectedEvent.LocationName))
+                {
+                    <div class="info-section">
+                        <h6 class="info-section-title">Venue</h6>
+                        <div class="info-row">
+                            <span class="info-label">Location:</span>
+                            <span class="info-value">@_selectedEvent.LocationName</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Price:</span>
+                            <span class="info-value">@_selectedEvent.LocationPrice.ToString("N0") RON</span>
+                        </div>
+                    </div>
+                }
+
+                @if (_selectedEvent.SelectedProducts.Count > 0)
+                {
+                    <div class="info-section">
+                        <h6 class="info-section-title">Services & Products</h6>
+                        <div class="products-list">
+                            @foreach (var product in _selectedEvent.SelectedProducts)
+                            {
+                                <div class="product-info-item">
+                                    <span class="product-name">@product.ProductName</span>
+                                    <span class="product-price">@product.Price.ToString("N0") RON</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                <div class="info-section total-section">
+                    <div class="info-row total-row">
+                        <span class="info-label">Total Price:</span>
+                        <span class="total-value">@_selectedEvent.TotalPrice.ToString("N0") RON</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </BodyTemplate>
+    <FooterTemplate>
+        <button class="btn btn-secondary" @onclick="CloseInfoModal">Close</button>
+    </FooterTemplate>
+</Modal>
+
+<!-- Edit Event Modal (Combined: Event Details + Venue & Products) -->
+<Modal @ref="_editEventModal" title="Edit Event" IsVerticallyCentered="true" Size="ModalSize.Large" OnHidden="RefreshEditEventModalData">
+    <BodyTemplate>
+        @if (_editEventEntry != null)
+        {
+            <div class="edit-event-full-container">
+                <!-- Event Details Section -->
+                <div class="event-details-section">
+                    <h6 class="section-title">Event Details</h6>
+                    <EditForm EditContext="_editEventDetailsContext">
+                        <FluentValidator TValidator="IValidator<EventEntryViewModel>" />
+                        <div class="mb-3">
+                            <label class="form-label">Event Name</label>
+                            <InputText type="text" class="form-control" @bind-value="_editEventEntry.Name" />
+                            <ValidationMessage For="@(() => _editEventEntry.Name)" class="text-danger" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Event Type</label>
+                            <InputSelect class="form-control" @bind-value="_editEventEntry.Type">
+                                <option value="0">Select a type...</option>
+                                <option value="1">Wedding</option>
+                                <option value="2">Birthday</option>
+                                <option value="3">Teambuilding</option>
+                                <option value="4">Festival</option>
+                                <option value="5">Other</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => _editEventEntry.Type)" class="text-danger" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Date (YYYY-MM-DD)</label>
+                            <InputText type="date" class="form-control" @bind-value="_editEventEntry.Date" />
+                            <ValidationMessage For="@(() => _editEventEntry.Date)" class="text-danger" />
+                        </div>
+                    </EditForm>
+                </div>
+
+                <!-- Venue & Products Section -->
+                @if (_availableLocationsForEdit != null && _availableProductsForEdit != null)
+                {
+                    <div class="venue-products-section">
+                        <h6 class="section-title">Select Venue</h6>
+                        <div class="locations-grid">
+                            @foreach (var location in _availableLocationsForEdit)
+                            {
+                                <div class="location-card @(_editEventEntry.SelectedLocationId == location.Id ? "selected" : "")"
+                                     @onclick="() => _editEventEntry.SelectedLocationId = location.Id">
+                                    <div class="location-info">
+                                        <h6>@location.Name</h6>
+                                        <p class="text-muted mb-0">@location.Price.ToString("N0") RON</p>
+                                    </div>
+                                    @if (_editEventEntry.SelectedLocationId == location.Id)
+                                    {
+                                        <div class="check-badge">✓</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+
+                        <h6 class="section-title mt-4">Select Services & Products</h6>
+                        <div class="products-selection">
+                            @foreach (var product in _availableProductsForEdit)
+                            {
+                                <div class="product-selection-item">
+                                    <div class="form-check form-check-custom">
+                                        <input type="checkbox" class="form-check-input" id="product_@product.Id"
+                                               @onchange="e => UpdateProductSelection(product.Id, (bool)e.Value!)" 
+                                               checked="@_editEventEntry.SelectedProductIds.Contains(product.Id)" />
+                                        <label class="form-check-label" for="product_@product.Id">
+                                            <span class="product-name">@product.Name</span>
+                                            <span class="product-type">@GetProductTypeString(product.Type)</span>
+                                            <span class="product-price">@product.Price.ToString("N0") RON</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </BodyTemplate>
+    <FooterTemplate>
+        <button class="btn btn-secondary" @onclick="CloseEditEventModal">Cancel</button>
+        <button class="btn btn-primary" @onclick="SaveEditEventComplete">Save All Changes</button>
+    </FooterTemplate>
+</Modal>
+
+<style>
+    /* Event Info Modal Styles */
+    .event-info-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .info-section {
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 16px;
+    }
+
+    .info-section:last-child {
+        border-bottom: none;
+    }
+
+    .info-section-title {
+        color: #6b7280;
+        font-size: 0.85rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 12px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+    }
+
+    .info-label {
+        color: #6b7280;
+        font-weight: 600;
+        min-width: 120px;
+    }
+
+    .info-value {
+        color: #1f2937;
+        font-weight: 500;
+    }
+
+    .products-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .product-info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 6px;
+        border-left: 3px solid #6366f1;
+    }
+
+    .product-name {
+        color: #1f2937;
+        font-weight: 500;
+    }
+
+    .product-price {
+        color: #6366f1;
+        font-weight: 600;
+    }
+
+    .total-section {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        padding: 16px;
+        border-radius: 8px;
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+
+    .total-row {
+        padding: 0;
+    }
+
+    .total-row .info-label {
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .total-value {
+        color: white;
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+
+    /* Edit Event Modal Styles */
+    .edit-event-container {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .section-title {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+
+    .locations-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+    }
+
+    .location-card {
+        border: 2px solid #d1d5db;
+        border-radius: 8px;
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        background: white;
+    }
+
+    .location-card:hover {
+        border-color: #6366f1;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    }
+
+    .location-card.selected {
+        border-color: #6366f1;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+
+    .location-info h6 {
+        margin-bottom: 8px;
+        color: #1f2937;
+    }
+
+    .check-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 28px;
+        height: 28px;
+        background: #10b981;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+
+    .products-selection {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .product-selection-item {
+        padding: 12px;
+        background: #f9fafb;
+        border-radius: 6px;
+        border: 1px solid #e5e7eb;
+        transition: all 0.2s ease;
+    }
+
+    .product-selection-item:hover {
+        background: #f3f4f6;
+        border-color: #d1d5db;
+    }
+
+    .form-check-custom {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0;
+    }
+
+    .form-check-custom .form-check-input {
+        margin: 0;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    .form-check-custom .form-check-label {
+        margin: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex: 1;
+        cursor: pointer;
+    }
+
+    .form-check-custom .product-name {
+        color: #1f2937;
+        font-weight: 500;
+    }
+
+    .form-check-custom .product-type {
+        color: #9ca3af;
+        font-size: 0.85rem;
+        margin: 0 8px;
+    }
+
+    .form-check-custom .product-price {
+        color: #6366f1;
+        font-weight: 600;
+        min-width: 100px;
+        text-align: right;
+    }
+
+    /* Combined Edit Event Modal Styles */
+    .edit-event-full-container {
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        max-height: 70vh;
+        overflow-y: auto;
+        padding-right: 8px;
+    }
+
+    .event-details-section {
+        border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 24px;
+    }
+
+    .event-details-section .section-title {
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #d1d5db;
+    }
+
+    .venue-products-section {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+</style>

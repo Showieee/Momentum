@@ -9,16 +9,79 @@
 
     <!-- Progress Bar -->
     <div class="progress-wrapper">
-        <div class="progress" style="height: 8px;">
-            <div class="progress-bar bg-gradient" role="progressbar" style="width: @((CurrentStep + 1) * 20)%"
-                 aria-valuenow="@(CurrentStep + 1)" aria-valuemin="1" aria-valuemax="5"></div>
-        </div>
-        <div class="step-indicators">
-            <div class="step-indicator @(CurrentStep >= 0 ? "active" : "")">1</div>
-            <div class="step-indicator @(CurrentStep >= 1 ? "active" : "")">2</div>
-            <div class="step-indicator @(CurrentStep >= 2 ? "active" : "")">3</div>
-            <div class="step-indicator @(CurrentStep >= 3 ? "active" : "")">4</div>
-            <div class="step-indicator @(CurrentStep >= 4 ? "active" : "")">5</div>
+        <div class="stepper-container">
+            <div class="stepper-steps">
+                <div class="step @(CurrentStep >= 0 ? "active" : "") @(CurrentStep > 0 ? "completed" : "")">
+                    <div class="step-circle">
+                        @if (CurrentStep > 0)
+                        {
+                            <span class="step-icon">✓</span>
+                        }
+                        else
+                        {
+                            <span>1</span>
+                        }
+                    </div>
+                    <div class="step-label">Person</div>
+                </div>
+
+                <div class="step-connector @(CurrentStep >= 1 ? "completed" : "")"></div>
+
+                <div class="step @(CurrentStep >= 1 ? "active" : "") @(CurrentStep > 1 ? "completed" : "")">
+                    <div class="step-circle">
+                        @if (CurrentStep > 1)
+                        {
+                            <span class="step-icon">✓</span>
+                        }
+                        else
+                        {
+                            <span>2</span>
+                        }
+                    </div>
+                    <div class="step-label">Event</div>
+                </div>
+
+                <div class="step-connector @(CurrentStep >= 2 ? "completed" : "")"></div>
+
+                <div class="step @(CurrentStep >= 2 ? "active" : "") @(CurrentStep > 2 ? "completed" : "")">
+                    <div class="step-circle">
+                        @if (CurrentStep > 2)
+                        {
+                            <span class="step-icon">✓</span>
+                        }
+                        else
+                        {
+                            <span>3</span>
+                        }
+                    </div>
+                    <div class="step-label">Venue</div>
+                </div>
+
+                <div class="step-connector @(CurrentStep >= 3 ? "completed" : "")"></div>
+
+                <div class="step @(CurrentStep >= 3 ? "active" : "") @(CurrentStep > 3 ? "completed" : "")">
+                    <div class="step-circle">
+                        @if (CurrentStep > 3)
+                        {
+                            <span class="step-icon">✓</span>
+                        }
+                        else
+                        {
+                            <span>4</span>
+                        }
+                    </div>
+                    <div class="step-label">Services</div>
+                </div>
+
+                <div class="step-connector @(CurrentStep >= 4 ? "completed" : "")"></div>
+
+                <div class="step @(CurrentStep >= 4 ? "active" : "")">
+                    <div class="step-circle">
+                        <span>5</span>
+                    </div>
+                    <div class="step-label">Review</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -320,38 +383,99 @@
     }
 
     .progress-wrapper {
-        margin-bottom: 40px;
+        margin-bottom: 50px;
+        padding: 30px 0;
     }
 
-    .bg-gradient {
-        background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
-    }
-
-    .step-indicators {
+    .stepper-container {
         display: flex;
-        justify-content: space-between;
-        margin-top: 20px;
-        gap: 10px;
+        justify-content: center;
+        padding: 20px;
+        background: #f9fafb;
+        border-radius: 12px;
     }
 
-    .step-indicator {
+    .stepper-steps {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        max-width: 900px;
+        gap: 0;
+    }
+
+    .step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         flex: 1;
+        position: relative;
+        z-index: 1;
+    }
+
+    .step-circle {
+        width: 50px;
         height: 50px;
         border-radius: 50%;
-        background: #ecf0f1;
+        background: white;
+        border: 3px solid #d1d5db;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 700;
-        color: #7f8c8d;
-        border: 2px solid #bdc3c7;
+        color: #6b7280;
+        font-size: 1.1rem;
         transition: all 0.3s ease;
+        position: relative;
+        z-index: 2;
     }
 
-    .step-indicator.active {
+    .step.active .step-circle {
         background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
         color: white;
         border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .step.completed .step-circle {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border-color: #10b981;
+    }
+
+    .step-icon {
+        font-size: 1.3rem;
+    }
+
+    .step-label {
+        margin-top: 12px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-align: center;
+        width: 100%;
+    }
+
+    .step.active .step-label {
+        color: #6366f1;
+        font-weight: 700;
+    }
+
+    .step.completed .step-label {
+        color: #10b981;
+    }
+
+    .step-connector {
+        flex: 1;
+        height: 3px;
+        background: #d1d5db;
+        margin: 0 8px;
+        transition: all 0.3s ease;
+        position: relative;
+        top: -30px;
+    }
+
+    .step-connector.completed {
+        background: linear-gradient(90deg, #10b981 0%, #059669 100%);
     }
 
     .step-content {

@@ -8,7 +8,7 @@ public interface IEventService
 
     Task<EventModel?> GetById(Guid id);
 
-    Task Insert(EventModel eventModel);
+    Task<Guid> Insert(EventModel eventModel);
 
     Task Update(Guid id, EventModel eventModel);
     
