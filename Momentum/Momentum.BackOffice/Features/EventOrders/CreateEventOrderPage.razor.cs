@@ -243,16 +243,31 @@ public partial class CreateEventOrderPage : IDisposable
 
             var createdEvent = eventDetail.Content;
 
+            // Build the products list including the location
+            var products = new List<BackOffice.Services.EventOrderProductRequest>();
+
+            // Add the selected location
+            if (_model.SelectedLocationId != Guid.Empty)
+            {
+                products.Add(new BackOffice.Services.EventOrderProductRequest
+                {
+                    ProductId = _model.SelectedLocationId
+                });
+            }
+
+            // Add the selected products
+            products.AddRange(_model.SelectedProducts
+                .Select(p => new BackOffice.Services.EventOrderProductRequest
+                {
+                    ProductId = p.ProductId
+                }));
+
             // Then create the event order
             var orderRequest = new CreateEventOrderRequest
             {
                 PersonId = _model.SelectedPersonId,
                 EventId = createdEvent.Id,
-                Products = [.. _model.SelectedProducts
-                    .Select(p => new BackOffice.Services.EventOrderProductRequest
-                    {
-                        ProductId = p.ProductId
-                    })]
+                Products = products
             };
 
             var result = await EventOrderService.CreateEventOrder(orderRequest);

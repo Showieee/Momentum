@@ -322,7 +322,7 @@
 
                 <div class="order-total">
                     <span class="total-label">Order Total:</span>
-                    <span class="total-amount">@_model.TotalPrice.ToString("N0") RON</span>
+                    <span class="total-amount">@(((_selectedLocation?.Price ?? 0m) + _model.TotalPrice).ToString("N0")) RON</span>
                 </div>
             </div>
         </div>
