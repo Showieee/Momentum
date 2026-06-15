@@ -11,10 +11,13 @@ public class EventOrderModel
 
     public List<EventOrderProductModel> Products { get; set; } = [];
 
+    public bool IsPaid { get; set; }
+    public DateTime? PaidAt { get; set; }
+
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 
-    public decimal TotalPrice => Products.Sum(p => p.UnitPrice * p.Quantity);
+    public decimal TotalPrice => Products.Sum(p => p.TotalPrice);
 }
 
 public class EventOrderProductModel
@@ -26,7 +29,10 @@ public class EventOrderProductModel
     public decimal Quantity { get; set; }
     public decimal UnitPrice { get; set; }
 
-    public decimal TotalPrice => UnitPrice * Quantity;
+    public int NumberOfPeople { get; set; } = 1;
+    public int NumberOfHours { get; set; } = 1;
+
+    public decimal TotalPrice => UnitPrice * Quantity * NumberOfPeople * NumberOfHours;
 }
 
 public class CreateEventOrderRequest
@@ -40,6 +46,8 @@ public class EventOrderProductRequest
 {
     public Guid ProductId { get; set; }
     public decimal Quantity { get; set; } = 1;
+    public int NumberOfPeople { get; set; } = 1;
+    public int NumberOfHours { get; set; } = 1;
 }
 
 public class PersonOrderModel

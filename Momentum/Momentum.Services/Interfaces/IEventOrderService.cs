@@ -8,5 +8,6 @@ public interface IEventOrderService
     Task<EventOrderModel?> GetById(Guid id);
     Task<EventOrderModel> Create(CreateEventOrderRequest request);
     Task Update(Guid id, CreateEventOrderRequest request);
+    Task MarkAsPaid(Guid id);
     Task Delete(Guid id);
 }

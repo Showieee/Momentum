@@ -1,27 +1,29 @@
 @inherits ExtendedComponentBase
 @attribute [Authorize(Roles = "Administrator, Manager")]
 
-<h3>Products Management</h3>
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">Products</h1>
+    </div>
 
-<!-- Search Field -->
-<div class="mb-3">
-    <input type="text" class="form-control" placeholder="Search product..."
-           @bind="_searchText" @oninput="OnSearchInput" />
-</div>
+    <div class="page-toolbar">
+        <div class="page-search">
+            <input type="text" class="form-control" placeholder="Search product..."
+                   @bind="_searchText" @oninput="OnSearchInput" />
+        </div>
+        <button class="btn btn-primary" @onclick="OpenAddModal">
+            <i class="bi bi-plus-lg"></i> Add product
+        </button>
+    </div>
 
-<!-- Add Button -->
-<button class="btn btn-primary mb-3" @onclick="OpenAddModal">
-    <i class="bi bi-plus-circle"></i> Add New Product
-</button>
-
-<!-- Display Products Table -->
-@if (_filteredModel.Count == 0)
-{
-    <p>No matching records found.</p>
-}
-else
-{
-    <table class="table table-striped">
+    <div class="page-card">
+        @if (_filteredModel.Count == 0)
+        {
+            <p class="page-empty">No matching records found.</p>
+        }
+        else
+        {
+            <table class="table">
         <thead>
             <tr>
                 <th>Name</th>
@@ -42,7 +44,17 @@ else
                     <td>
                         <span title="Type: @GetProductTypeString(entry.Type)">@entry.CompanyName</span>
                     </td>
-                    <td>@entry.Price.ToString("N0") RON</td>
+                    <td>
+                        @entry.Price.ToString("N0") RON
+                        @if (entry.IsPerPerson)
+                        {
+                            <span class="badge bg-secondary ms-1" title="Per person">/ person</span>
+                        }
+                        @if (entry.IsHourly)
+                        {
+                            <span class="badge bg-secondary ms-1" title="Hourly">/ hour</span>
+                        }
+                    </td>
                     <td>
                         <button class="btn btn-warning btn-sm me-2" @onclick="() => OpenEditModal(entry.Id)">
                             <i class="bi bi-pencil"></i> Edit
@@ -53,9 +65,11 @@ else
                     </td>
                 </tr>
             }
-        </tbody>
-    </table>
-}
+            </tbody>
+        </table>
+        }
+    </div>
+</div>
 
 <!-- Add/Edit Modal -->
 <Modal @ref="_addModal" title="@(_isEditMode ? "Edit Product" : "Add New Product")" IsVerticallyCentered="true" OnHidden="RefreshModalData">
@@ -77,6 +91,13 @@ else
                     <option value="4">Music</option>
                     <option value="5">Videography</option>
                     <option value="6">Decoration</option>
+                    <option value="7">Entertainment</option>
+                    <option value="8">Bar</option>
+                    <option value="9">Security</option>
+                    <option value="10">Cleaning</option>
+                    <option value="11">Logistics</option>
+                    <option value="12">Transport</option>
+                    <option value="13">Print</option>
                 </InputSelect>
                 <ValidationMessage For="@(() => _newEntry.Type)" class="text-danger" />
             </div>
@@ -95,6 +116,21 @@ else
                 <label class="form-label">Price</label>
                 <InputNumber type="number" class="form-control" @bind-value="_newEntry.Price" step="0.01" />
                 <ValidationMessage For="@(() => _newEntry.Price)" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Pricing Options</label>
+                <div class="form-check">
+                    <InputCheckbox class="form-check-input" id="isPerPerson" @bind-Value="_newEntry.IsPerPerson" />
+                    <label class="form-check-label" for="isPerPerson">
+                        Per person <small class="text-muted">(price is multiplied by the number of people)</small>
+                    </label>
+                </div>
+                <div class="form-check">
+                    <InputCheckbox class="form-check-input" id="isHourly" @bind-Value="_newEntry.IsHourly" />
+                    <label class="form-check-label" for="isHourly">
+                        Hourly <small class="text-muted">(price is multiplied by the number of hours)</small>
+                    </label>
+                </div>
             </div>
             <div class="mb-3">
                 <label class="form-label">Description</label>

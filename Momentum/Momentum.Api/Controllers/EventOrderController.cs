@@ -55,7 +55,9 @@ public class EventOrderController : ControllerBase
             Products = request.Products.Select(p => new Services.Models.EventOrderProductRequest
             {
                 ProductId = p.ProductId,
-                Quantity = p.Quantity
+                Quantity = p.Quantity,
+                NumberOfPeople = p.NumberOfPeople,
+                NumberOfHours = p.NumberOfHours
             }).ToList()
         };
 
@@ -77,13 +79,26 @@ public class EventOrderController : ControllerBase
             Products = request.Products.Select(p => new Services.Models.EventOrderProductRequest
             {
                 ProductId = p.ProductId,
-                Quantity = p.Quantity
+                Quantity = p.Quantity,
+                NumberOfPeople = p.NumberOfPeople,
+                NumberOfHours = p.NumberOfHours
             }).ToList()
         };
 
         await _eventOrderService.Update(id, serviceRequest);
 
         _logger.LogInformation("Event order updated");
+        return NoContent();
+    }
+
+    [HttpPost("{id}/pay", Name = "PayEventOrder")]
+    public async Task<IActionResult> Pay([FromRoute] Guid id)
+    {
+        _logger.LogInformation("Marking event order {Id} as paid", id);
+
+        await _eventOrderService.MarkAsPaid(id);
+
+        _logger.LogInformation("Event order {Id} marked as paid", id);
         return NoContent();
     }
 
@@ -129,12 +144,18 @@ public class EventOrderController : ControllerBase
                     Type = (int)p.Product.Type,
                     Name = p.Product.Name,
                     Description = p.Product.Description,
-                    Price = p.Product.Price
+                    Price = p.Product.Price,
+                    IsPerPerson = p.Product.IsPerPerson,
+                    IsHourly = p.Product.IsHourly
                 },
                 Quantity = p.Quantity,
                 UnitPrice = p.UnitPrice,
+                NumberOfPeople = p.NumberOfPeople,
+                NumberOfHours = p.NumberOfHours,
                 TotalPrice = p.TotalPrice
             }).ToList(),
+            IsPaid = model.IsPaid,
+            PaidAt = model.PaidAt,
             CreatedAt = model.CreatedAt,
             UpdatedAt = model.UpdatedAt,
             TotalPrice = model.TotalPrice

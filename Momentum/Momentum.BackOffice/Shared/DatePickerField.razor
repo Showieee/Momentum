@@ -1,0 +1,194 @@
+@namespace Momentum.BackOffice.Shared
+@inject IJSRuntime JSRuntime
+
+<div class="date-picker @(IsOpen ? "is-open" : "")">
+    @if (IsOpen)
+    {
+        <div class="date-picker-backdrop" @onclick="Close"></div>
+    }
+
+    <div class="date-picker-field">
+        <button type="button"
+                @ref="_triggerRef"
+                class="date-picker-trigger @CssClass"
+                @onclick="Toggle"
+                aria-haspopup="dialog"
+                aria-expanded="@IsOpen"
+                aria-label="@Placeholder">
+            <span class="date-picker-text @(HasValue ? "" : "is-placeholder")">@DisplayText</span>
+            <i class="bi bi-calendar3 date-picker-icon" aria-hidden="true"></i>
+        </button>
+
+        @if (IsOpen)
+        {
+            <div @ref="_panelRef"
+                 class="date-picker-panel"
+                 @onclick:stopPropagation="true"
+                 role="dialog"
+                 aria-label="Choose date">
+                <div class="date-picker-header">
+                    <button type="button" class="date-picker-nav" @onclick="PreviousMonth" aria-label="Previous month">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <span class="date-picker-month">@_viewMonth.ToString("MMMM yyyy")</span>
+                    <button type="button" class="date-picker-nav" @onclick="NextMonth" aria-label="Next month">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+
+                <div class="date-picker-weekdays">
+                    @foreach (var weekday in _weekdayLabels)
+                    {
+                        <span class="date-picker-weekday">@weekday</span>
+                    }
+                </div>
+
+                <div class="date-picker-grid">
+                    @foreach (var cell in BuildCalendarCells())
+                    {
+                        if (cell is null)
+                        {
+                            <span class="date-picker-day is-empty"></span>
+                        }
+                        else
+                        {
+                            <button type="button"
+                                    class="date-picker-day @(IsSelected(cell.Value) ? "is-selected" : "") @(IsToday(cell.Value) ? "is-today" : "") @(IsDisabled(cell.Value) ? "is-disabled" : "")"
+                                    disabled="@IsDisabled(cell.Value)"
+                                    @onclick="() => SelectDate(cell.Value)">
+                                @cell.Value.Day
+                            </button>
+                        }
+                    }
+                </div>
+
+                <div class="date-picker-footer">
+                    <button type="button" class="date-picker-action" @onclick="SelectToday">Today</button>
+                    @if (HasValue)
+                    {
+                        <button type="button" class="date-picker-action date-picker-action-muted" @onclick="Clear">Clear</button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private static readonly string[] _weekdayLabels = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"];
+
+    private DateOnly _viewMonth;
+    private bool IsOpen { get; set; }
+    private bool _needsPosition;
+    private ElementReference _triggerRef;
+    private ElementReference _panelRef;
+
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "Select date";
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public bool DisablePastDates { get; set; } = true;
+
+    private bool HasValue => !string.IsNullOrWhiteSpace(Value) && SelectedDate.HasValue;
+
+    private DateOnly? SelectedDate =>
+        DateOnly.TryParse(Value, out var parsed) ? parsed : null;
+
+    private string DisplayText =>
+        SelectedDate?.ToString("ddd, MMM d, yyyy") ?? Placeholder;
+
+    protected override void OnParametersSet()
+    {
+        _viewMonth = SelectedDate ?? DateOnly.FromDateTime(DateTime.Today);
+        _viewMonth = new DateOnly(_viewMonth.Year, _viewMonth.Month, 1);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_needsPosition && IsOpen)
+        {
+            _needsPosition = false;
+            await JSRuntime.InvokeVoidAsync("common.positionDatePickerPanel", _triggerRef, _panelRef);
+        }
+    }
+
+    private async Task Toggle()
+    {
+        if (!IsOpen)
+        {
+            _viewMonth = SelectedDate ?? DateOnly.FromDateTime(DateTime.Today);
+            _viewMonth = new DateOnly(_viewMonth.Year, _viewMonth.Month, 1);
+        }
+
+        IsOpen = !IsOpen;
+
+        if (IsOpen)
+        {
+            _needsPosition = true;
+        }
+    }
+
+    private void Close() => IsOpen = false;
+
+    private void PreviousMonth()
+    {
+        _viewMonth = _viewMonth.AddMonths(-1);
+    }
+
+    private void NextMonth()
+    {
+        _viewMonth = _viewMonth.AddMonths(1);
+    }
+
+    private async Task SelectDate(DateOnly date)
+    {
+        if (IsDisabled(date))
+        {
+            return;
+        }
+
+        Value = date.ToString("yyyy-MM-dd");
+        await ValueChanged.InvokeAsync(Value);
+        Close();
+    }
+
+    private async Task SelectToday()
+    {
+        await SelectDate(DateOnly.FromDateTime(DateTime.Today));
+    }
+
+    private async Task Clear()
+    {
+        Value = null;
+        await ValueChanged.InvokeAsync(null);
+        Close();
+    }
+
+    private bool IsSelected(DateOnly date) => SelectedDate == date;
+
+    private static bool IsToday(DateOnly date) =>
+        date == DateOnly.FromDateTime(DateTime.Today);
+
+    private bool IsDisabled(DateOnly date) =>
+        DisablePastDates && date < DateOnly.FromDateTime(DateTime.Today);
+
+    private IEnumerable<DateOnly?> BuildCalendarCells()
+    {
+        var firstDay = new DateOnly(_viewMonth.Year, _viewMonth.Month, 1);
+        var daysInMonth = DateTime.DaysInMonth(_viewMonth.Year, _viewMonth.Month);
+        var leadingEmpty = GetMondayFirstOffset(firstDay.DayOfWeek);
+
+        for (var i = 0; i < leadingEmpty; i++)
+        {
+            yield return null;
+        }
+
+        for (var day = 1; day <= daysInMonth; day++)
+        {
+            yield return new DateOnly(_viewMonth.Year, _viewMonth.Month, day);
+        }
+    }
+
+    private static int GetMondayFirstOffset(DayOfWeek dayOfWeek) =>
+        dayOfWeek == DayOfWeek.Sunday ? 6 : (int)dayOfWeek - 1;
+}

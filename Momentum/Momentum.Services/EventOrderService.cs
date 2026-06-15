@@ -82,7 +82,9 @@ public class EventOrderService : IEventOrderService
                 EventOrderId = order.Id,
                 ProductId = productRequest.ProductId,
                 Quantity = productRequest.Quantity,
-                UnitPrice = product.Price
+                UnitPrice = product.Price,
+                NumberOfPeople = product.IsPerPerson ? Math.Max(1, productRequest.NumberOfPeople) : 1,
+                NumberOfHours = product.IsHourly ? Math.Max(1, productRequest.NumberOfHours) : 1
             };
 
             _dbContext.Add(orderProduct);
@@ -139,11 +141,31 @@ public class EventOrderService : IEventOrderService
                 EventOrderId = order.Id,
                 ProductId = productRequest.ProductId,
                 Quantity = productRequest.Quantity,
-                UnitPrice = product.Price
+                UnitPrice = product.Price,
+                NumberOfPeople = product.IsPerPerson ? Math.Max(1, productRequest.NumberOfPeople) : 1,
+                NumberOfHours = product.IsHourly ? Math.Max(1, productRequest.NumberOfHours) : 1
             };
 
             order.Products.Add(orderProduct);
         }
+
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task MarkAsPaid(Guid id)
+    {
+        var order = await _dbContext.Set<EventOrderEntity>()
+            .FirstOrDefaultAsync(x => x.Id == id);
+
+        if (order == null)
+            throw new InvalidOperationException("Order not found");
+
+        if (order.IsPaid)
+            return;
+
+        order.IsPaid = true;
+        order.PaidAt = DateTime.UtcNow;
+        order.UpdatedAt = DateTime.UtcNow;
 
         await _dbContext.SaveChangesAsync();
     }
@@ -193,11 +215,17 @@ public class EventOrderService : IEventOrderService
                     Type = eop.Product.Type,
                     Name = eop.Product.Name,
                     Description = eop.Product.Description,
-                    Price = eop.Product.Price
+                    Price = eop.Product.Price,
+                    IsPerPerson = eop.Product.IsPerPerson,
+                    IsHourly = eop.Product.IsHourly
                 },
                 Quantity = eop.Quantity,
-                UnitPrice = eop.UnitPrice
+                UnitPrice = eop.UnitPrice,
+                NumberOfPeople = eop.NumberOfPeople,
+                NumberOfHours = eop.NumberOfHours
             }).ToList(),
+            IsPaid = entity.IsPaid,
+            PaidAt = entity.PaidAt,
             CreatedAt = entity.CreatedAt,
             UpdatedAt = entity.UpdatedAt
         };

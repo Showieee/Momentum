@@ -28,6 +28,9 @@ public class EventOrderConfiguration : IEntityTypeConfiguration<EventOrderEntity
             .HasForeignKey(x => x.EventOrderId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Property(x => x.IsPaid)
+            .HasDefaultValue(false);
+
         builder.Property(x => x.CreatedAt)
             .HasDefaultValueSql("GETUTCDATE()");
     }
@@ -57,5 +60,11 @@ public class EventOrderProductConfiguration : IEntityTypeConfiguration<EventOrde
 
         builder.Property(x => x.UnitPrice)
             .HasColumnType("decimal(18,2)");
+
+        builder.Property(x => x.NumberOfPeople)
+            .HasDefaultValue(1);
+
+        builder.Property(x => x.NumberOfHours)
+            .HasDefaultValue(1);
     }
 }

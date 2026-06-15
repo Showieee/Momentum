@@ -41,6 +41,7 @@ public static class Routes
 		public const string GetById = "/eventorder/{id}";
 		public const string Create = "/eventorder";
 		public const string Update = "/eventorder/{id}";
+		public const string Pay = "/eventorder/{id}/pay";
 		public const string Delete = "/eventorder/{id}";
 	}
 }

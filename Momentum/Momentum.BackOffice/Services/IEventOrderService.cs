@@ -16,6 +16,9 @@ public interface IEventOrderService
     [Put(Momentum.Shared.Routes.EventOrders.Update)]
     Task<IApiResponse> UpdateEventOrder(Guid id, [Body] CreateEventOrderRequest request, CancellationToken ct = default);
 
+    [Post(Momentum.Shared.Routes.EventOrders.Pay)]
+    Task<IApiResponse> PayEventOrder(Guid id, CancellationToken ct = default);
+
     [Delete(Momentum.Shared.Routes.EventOrders.Delete)]
     Task<IApiResponse> DeleteEventOrder(Guid id, CancellationToken ct = default);
 }
@@ -31,6 +34,8 @@ public class EventOrderProductRequest
 {
     public Guid ProductId { get; set; }
     public decimal Quantity { get; set; } = 1;
+    public int NumberOfPeople { get; set; } = 1;
+    public int NumberOfHours { get; set; } = 1;
 }
 
 public class EventOrderResponse
@@ -43,6 +48,9 @@ public class EventOrderResponse
     public EventDetail? Event { get; set; }
     
     public List<EventOrderProductResponse> Products { get; set; } = [];
+    
+    public bool IsPaid { get; set; }
+    public DateTime? PaidAt { get; set; }
     
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
@@ -58,6 +66,8 @@ public class EventOrderProductResponse
     
     public decimal Quantity { get; set; }
     public decimal UnitPrice { get; set; }
+    public int NumberOfPeople { get; set; } = 1;
+    public int NumberOfHours { get; set; } = 1;
     public decimal TotalPrice { get; set; }
 }
 
@@ -85,4 +95,6 @@ public class ProductDetail
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public decimal Price { get; set; }
+    public bool IsPerPerson { get; set; }
+    public bool IsHourly { get; set; }
 }

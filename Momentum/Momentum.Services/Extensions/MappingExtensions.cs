@@ -48,6 +48,8 @@ public static class MappingExtensions
             Description = value.Description,
             Price = value.Price,
             Type = value.Type,
+            IsPerPerson = value.IsPerPerson,
+            IsHourly = value.IsHourly,
             Company = companyEntity
         };
     }
@@ -113,6 +115,8 @@ public static class MappingExtensions
             CompanyId = value.CompanyId,
             Name = value.Name,
             Price = value.Price,
+            IsPerPerson = value.IsPerPerson,
+            IsHourly = value.IsHourly,
             Company = !mapCompanies ? null : value.Company.ToModel(false),
         };
     }
@@ -146,6 +150,8 @@ public static class MappingExtensions
         entity.Description = value.Description;
         entity.Price = value.Price;
         entity.Type = value.Type;
+        entity.IsPerPerson = value.IsPerPerson;
+        entity.IsHourly = value.IsHourly;
     }
 
     public static void MapToEntity(this EventModel value, EventEntity entity)

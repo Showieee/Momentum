@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Momentum.Persistance;
 
@@ -11,9 +12,11 @@ using Momentum.Persistance;
 namespace Momentum.Persistance.Migrations
 {
     [DbContext(typeof(MomentumDbContext))]
-    partial class MomentumDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260602132433_AddProductPricingModeAndOrderQuantities")]
+    partial class AddProductPricingModeAndOrderQuantities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -133,14 +136,6 @@ namespace Momentum.Persistance.Migrations
 
                     b.Property<Guid>("EventId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<bool>("IsPaid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<DateTime?>("PaidAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("PersonId")
                         .HasColumnType("uniqueidentifier");

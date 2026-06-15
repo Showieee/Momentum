@@ -11,6 +11,9 @@ public class EventOrderEntity
 
     public virtual List<EventOrderProductEntity> Products { get; set; } = [];
 
+    public bool IsPaid { get; set; }
+    public DateTime? PaidAt { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 }
@@ -26,4 +29,7 @@ public class EventOrderProductEntity
 
     public decimal Quantity { get; set; } = 1;
     public decimal UnitPrice { get; set; }
+
+    public int NumberOfPeople { get; set; } = 1;
+    public int NumberOfHours { get; set; } = 1;
 }

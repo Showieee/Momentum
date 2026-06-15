@@ -47,6 +47,8 @@ public static class MappingExtensions
             Name = value.Name,
             Description = value.Description,
             Price = value.Price,
+            IsPerPerson = value.IsPerPerson,
+            IsHourly = value.IsHourly,
 			CompanyId = value.CompanyId
         };
     }
@@ -83,7 +85,9 @@ public static class MappingExtensions
             Products = value.Products.Select(p => new Models.EventOrderProductRequest
             {
                 ProductId = p.ProductId,
-                Quantity = p.Quantity
+                Quantity = p.Quantity,
+                NumberOfPeople = p.NumberOfPeople,
+                NumberOfHours = p.NumberOfHours
             }).ToList()
         };
     }
@@ -92,10 +96,12 @@ public static class MappingExtensions
     {
         return new ProductModel
         {
-            Type = value.ProductType ?? ProductType.Undefined,
+            Type = value.Type ?? ProductType.Undefined,
             Name = value.Name ?? string.Empty,
             Description = value.Description,
-            Price = value.Price ?? 0
+            Price = value.Price ?? 0,
+            IsPerPerson = value.IsPerPerson ?? false,
+            IsHourly = value.IsHourly ?? false
         };
     }
 

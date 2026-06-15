@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Momentum.Persistance;
 
@@ -11,9 +12,11 @@ using Momentum.Persistance;
 namespace Momentum.Persistance.Migrations
 {
     [DbContext(typeof(MomentumDbContext))]
-    partial class MomentumDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260611110357_AddEventOrderPaymentStatus")]
+    partial class AddEventOrderPaymentStatus
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

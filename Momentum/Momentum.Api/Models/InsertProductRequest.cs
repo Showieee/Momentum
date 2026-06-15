@@ -8,6 +8,8 @@ namespace Momentum.API.Models
         public required string Name { get; set; }
         public string? Description { get; set; }
         public required decimal Price { get; set; }
+        public bool IsPerPerson { get; set; }
+        public bool IsHourly { get; set; }
         public required Guid CompanyId { get; set; }
     }
 }

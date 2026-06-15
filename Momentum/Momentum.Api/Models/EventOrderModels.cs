@@ -11,6 +11,8 @@ public class EventOrderProductRequest
 {
     public Guid ProductId { get; set; }
     public decimal Quantity { get; set; } = 1;
+    public int NumberOfPeople { get; set; } = 1;
+    public int NumberOfHours { get; set; } = 1;
 }
 
 public class EventOrderResponse
@@ -23,6 +25,9 @@ public class EventOrderResponse
     public EventResponse? Event { get; set; }
     
     public List<EventOrderProductResponse> Products { get; set; } = [];
+    
+    public bool IsPaid { get; set; }
+    public DateTime? PaidAt { get; set; }
     
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
@@ -38,6 +43,8 @@ public class EventOrderProductResponse
     
     public decimal Quantity { get; set; }
     public decimal UnitPrice { get; set; }
+    public int NumberOfPeople { get; set; } = 1;
+    public int NumberOfHours { get; set; } = 1;
     public decimal TotalPrice { get; set; }
 }
 
@@ -65,4 +72,6 @@ public class ProductResponse
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
     public decimal Price { get; set; }
+    public bool IsPerPerson { get; set; }
+    public bool IsHourly { get; set; }
 }

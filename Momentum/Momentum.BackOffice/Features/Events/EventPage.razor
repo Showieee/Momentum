@@ -1,27 +1,29 @@
 @inherits ExtendedComponentBase
 @attribute [Authorize(Roles = "Administrator, Manager")]
 
-<h3>Events Management</h3>
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">Events</h1>
+    </div>
 
-<!-- Search Field -->
-<div class="mb-3">
-    <input type="text" class="form-control" placeholder="Search event..."
-           @bind="_searchText" @oninput="OnSearchInput" />
-</div>
+    <div class="page-toolbar">
+        <div class="page-search">
+            <input type="text" class="form-control" placeholder="Search event..."
+                   @bind="_searchText" @oninput="OnSearchInput" />
+        </div>
+        <button class="btn btn-primary" @onclick="OpenAddModal">
+            <i class="bi bi-plus-lg"></i> Add event
+        </button>
+    </div>
 
-<!-- Add Button -->
-<button class="btn btn-primary mb-3" @onclick="OpenAddModal">
-    <i class="bi bi-plus-circle"></i> Add New Event
-</button>
-
-<!-- Display Events Table -->
-@if (_filteredModel.Count == 0)
-{
-    <p>No matching records found.</p>
-}
-else
-{
-    <table class="table table-striped">
+    <div class="page-card">
+        @if (_filteredModel.Count == 0)
+        {
+            <p class="page-empty">No matching records found.</p>
+        }
+        else
+        {
+            <table class="table">
         <thead>
             <tr>
                 <th>Name</th>
@@ -41,6 +43,18 @@ else
                         <button class="btn btn-info btn-sm me-2" @onclick="() => OpenInfoModal(entry.Id)" title="View Event Info">
                             <i class="bi bi-info-circle"></i> Info
                         </button>
+                        @if (entry.IsPaid)
+                        {
+                            <button class="btn btn-success btn-sm me-2" disabled title="This order has already been paid">
+                                <i class="bi bi-check-circle"></i> Paid
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-primary btn-sm me-2" @onclick="() => OpenCheckoutModal(entry.Id)" title="Pay for this order">
+                                <i class="bi bi-credit-card"></i> Order
+                            </button>
+                        }
                         <button class="btn btn-warning btn-sm me-2" @onclick="() => OpenEditModal(entry.Id)">
                             <i class="bi bi-pencil"></i> Edit
                         </button>
@@ -50,9 +64,11 @@ else
                     </td>
                 </tr>
             }
-        </tbody>
-    </table>
-}
+            </tbody>
+        </table>
+        }
+    </div>
+</div>
 
 <!-- Add/Edit Modal -->
 <Modal @ref="_addModal" title="@(_isEditMode ? "Edit Event" : "Add New Event")" IsVerticallyCentered="true" OnHidden="RefreshModalData">
@@ -73,6 +89,13 @@ else
                     <option value="3">Teambuilding</option>
                     <option value="4">Festival</option>
                     <option value="5">Other</option>
+                    <option value="6">Meeting</option>
+                    <option value="7">Party</option>
+                    <option value="8">Community</option>
+                    <option value="9">Conference</option>
+                    <option value="10">Gala</option>
+                    <option value="11">Product Launch</option>
+                    <option value="12">Baby Shower</option>
                 </InputSelect>
                 <ValidationMessage For="@(() => _newEntry.Type)" class="text-danger" />
             </div>
@@ -135,7 +158,15 @@ else
                         </div>
                         <div class="info-row">
                             <span class="info-label">Price:</span>
-                            <span class="info-value">@_selectedEvent.LocationPrice.ToString("N0") RON</span>
+                            <span class="info-value">
+                                @_selectedEvent.LocationLineTotal.ToString("N0") RON
+                                @if (_selectedEvent.LocationIsPerPerson || _selectedEvent.LocationIsHourly)
+                                {
+                                    <small class="text-muted d-block">
+                                        @_selectedEvent.LocationPrice.ToString("N0") RON@(_selectedEvent.LocationIsPerPerson ? $" × {_selectedEvent.LocationPeople} people" : "")@(_selectedEvent.LocationIsHourly ? $" × {_selectedEvent.LocationHours} hours" : "")
+                                    </small>
+                                }
+                            </span>
                         </div>
                     </div>
                 }
@@ -148,8 +179,16 @@ else
                             @foreach (var product in _selectedEvent.SelectedProducts)
                             {
                                 <div class="product-info-item">
-                                    <span class="product-name">@product.ProductName</span>
-                                    <span class="product-price">@product.Price.ToString("N0") RON</span>
+                                    <span class="product-name">
+                                        @product.ProductName
+                                        @if (product.IsPerPerson || product.IsHourly)
+                                        {
+                                            <small class="text-muted d-block">
+                                                @product.Price.ToString("N0") RON@(product.IsPerPerson ? $" × {product.NumberOfPeople} people" : "")@(product.IsHourly ? $" × {product.NumberOfHours} hours" : "")
+                                            </small>
+                                        }
+                                    </span>
+                                    <span class="product-price">@product.LineTotal.ToString("N0") RON</span>
                                 </div>
                             }
                         </div>
@@ -195,6 +234,13 @@ else
                                 <option value="3">Teambuilding</option>
                                 <option value="4">Festival</option>
                                 <option value="5">Other</option>
+                                <option value="6">Meeting</option>
+                                <option value="7">Party</option>
+                                <option value="8">Community</option>
+                                <option value="9">Conference</option>
+                                <option value="10">Gala</option>
+                                <option value="11">Product Launch</option>
+                                <option value="12">Baby Shower</option>
                             </InputSelect>
                             <ValidationMessage For="@(() => _editEventEntry.Type)" class="text-danger" />
                         </div>
@@ -215,10 +261,13 @@ else
                             @foreach (var location in _availableLocationsForEdit)
                             {
                                 <div class="location-card @(_editEventEntry.SelectedLocationId == location.Id ? "selected" : "")"
-                                     @onclick="() => _editEventEntry.SelectedLocationId = location.Id">
+                                     @onclick="() => SelectEditLocation(location.Id)">
                                     <div class="location-info">
                                         <h6>@location.Name</h6>
-                                        <p class="text-muted mb-0">@location.Price.ToString("N0") RON</p>
+                                        <p class="text-muted mb-0">
+                                            @location.Price.ToString("N0") RON
+                                            @(location.IsPerPerson ? " / person" : "")@(location.IsHourly ? " / hour" : "")
+                                        </p>
                                     </div>
                                     @if (_editEventEntry.SelectedLocationId == location.Id)
                                     {
@@ -227,6 +276,38 @@ else
                                 </div>
                             }
                         </div>
+
+                        @{
+                            var editVenue = GetEditSelectedLocation();
+                        }
+                        @if (editVenue != null && (editVenue.IsPerPerson || editVenue.IsHourly))
+                        {
+                            <div class="line-options mt-3">
+                                <h6 class="mb-2">Pricing options for <strong>@editVenue.Name</strong></h6>
+                                <div class="line-options-inputs">
+                                    @if (editVenue.IsPerPerson)
+                                    {
+                                        <div class="line-option">
+                                            <label>Number of people</label>
+                                            <input type="number" min="1" class="form-control form-control-sm"
+                                                   @bind="_editLocationPeople" />
+                                        </div>
+                                    }
+                                    @if (editVenue.IsHourly)
+                                    {
+                                        <div class="line-option">
+                                            <label>Number of hours</label>
+                                            <input type="number" min="1" class="form-control form-control-sm"
+                                                   @bind="_editLocationHours" />
+                                        </div>
+                                    }
+                                    <div class="line-option line-option-total">
+                                        <label>Venue total</label>
+                                        <div class="line-total-value">@GetEditLocationLineTotal().ToString("N0") RON</div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
 
                         <h6 class="section-title mt-4">Select Services & Products</h6>
                         <div class="products-selection">
@@ -238,11 +319,39 @@ else
                                                @onchange="e => UpdateProductSelection(product.Id, (bool)e.Value!)" 
                                                checked="@_editEventEntry.SelectedProductIds.Contains(product.Id)" />
                                         <label class="form-check-label" for="product_@product.Id">
-                                            <span class="product-name">@product.Name</span>
+                                            <span class="product-name">
+                                                @product.Name
+                                                @(product.IsPerPerson ? " / person" : "")@(product.IsHourly ? " / hour" : "")
+                                            </span>
                                             <span class="product-type">@GetProductTypeString(product.Type)</span>
                                             <span class="product-price">@product.Price.ToString("N0") RON</span>
                                         </label>
                                     </div>
+                                    @if (_editEventEntry.SelectedProductIds.Contains(product.Id) && (product.IsPerPerson || product.IsHourly))
+                                    {
+                                        <div class="line-options-inputs mt-2">
+                                            @if (product.IsPerPerson)
+                                            {
+                                                <div class="line-option">
+                                                    <label>People</label>
+                                                    <input type="number" min="1" class="form-control form-control-sm"
+                                                           @bind="product.NumberOfPeople" />
+                                                </div>
+                                            }
+                                            @if (product.IsHourly)
+                                            {
+                                                <div class="line-option">
+                                                    <label>Hours</label>
+                                                    <input type="number" min="1" class="form-control form-control-sm"
+                                                           @bind="product.NumberOfHours" />
+                                                </div>
+                                            }
+                                            <div class="line-option line-option-total">
+                                                <label>Line total</label>
+                                                <div class="line-total-value">@GetProductLineTotal(product).ToString("N0") RON</div>
+                                            </div>
+                                        </div>
+                                    }
                                 </div>
                             }
                         </div>
@@ -265,7 +374,129 @@ else
     </FooterTemplate>
 </Modal>
 
+<!-- Checkout Modal -->
+<Modal @ref="_checkoutModal" title="Checkout" IsVerticallyCentered="true" OnHidden="RefreshCheckoutModalData">
+    <BodyTemplate>
+        <div class="checkout-container">
+            <div class="checkout-summary">
+                <div class="checkout-summary-row">
+                    <span class="checkout-event-name">@_selectedEvent.Name</span>
+                </div>
+                <div class="checkout-summary-row checkout-total-row">
+                    <span>Amount due</span>
+                    <span class="checkout-amount">@_selectedEvent.TotalPrice.ToString("N0") RON</span>
+                </div>
+            </div>
+
+            <div class="checkout-card-badge">
+                <i class="bi bi-credit-card-2-front"></i>
+                <span>Card payment only</span>
+            </div>
+
+            <EditForm EditContext="_checkoutContext">
+                <FluentValidator TValidator="IValidator<CheckoutViewModel>" />
+                <div class="mb-3">
+                    <label class="form-label">Cardholder Name</label>
+                    <InputText class="form-control" placeholder="Name on card" @bind-value="_checkout.CardholderName" />
+                    <ValidationMessage For="@(() => _checkout.CardholderName)" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Card Number</label>
+                    <InputText class="form-control" placeholder="1234 5678 9012 3456" autocomplete="off" @bind-value="_checkout.CardNumber" />
+                    <ValidationMessage For="@(() => _checkout.CardNumber)" class="text-danger" />
+                </div>
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <label class="form-label">Expiry (MM/YY)</label>
+                        <InputText class="form-control" placeholder="MM/YY" autocomplete="off" @bind-value="_checkout.Expiry" />
+                        <ValidationMessage For="@(() => _checkout.Expiry)" class="text-danger" />
+                    </div>
+                    <div class="col-6 mb-3">
+                        <label class="form-label">CVC</label>
+                        <InputText class="form-control" placeholder="123" autocomplete="off" @bind-value="_checkout.Cvc" />
+                        <ValidationMessage For="@(() => _checkout.Cvc)" class="text-danger" />
+                    </div>
+                </div>
+            </EditForm>
+
+            <p class="checkout-disclaimer">
+                <i class="bi bi-shield-lock"></i>
+                Your card details are used only to complete this payment and are never stored.
+            </p>
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <button class="btn btn-secondary" @onclick="CloseCheckoutModal" disabled="@_isProcessingPayment">Cancel</button>
+        <button class="btn btn-primary" @onclick="ProcessPayment" disabled="@(!_isCheckoutValid || _isProcessingPayment)">
+            @if (_isProcessingPayment)
+            {
+                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                <span>Processing...</span>
+            }
+            else
+            {
+                <span>Pay @_selectedEvent.TotalPrice.ToString("N0") RON</span>
+            }
+        </button>
+    </FooterTemplate>
+</Modal>
+
 <style>
+    /* Checkout Modal Styles */
+    .checkout-container {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+    }
+
+    .checkout-summary {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 16px;
+        border-left: 3px solid #6366f1;
+    }
+
+    .checkout-summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .checkout-event-name {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .checkout-total-row {
+        margin-top: 8px;
+        color: #6b7280;
+        font-weight: 600;
+    }
+
+    .checkout-amount {
+        color: #6366f1;
+        font-weight: 700;
+        font-size: 1.25rem;
+    }
+
+    .checkout-card-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #6b7280;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+
+    .checkout-disclaimer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        color: #9ca3af;
+        margin: 0;
+    }
+
     /* Event Info Modal Styles */
     .event-info-container {
         display: flex;
@@ -532,12 +763,46 @@ else
         font-weight: 700;
         font-size: 1.5rem;
     }
-        border-bottom: 1px solid #d1d5db;
+
+    /* Per-person / hourly line options */
+    .line-options {
+        background: #f3f4f6;
+        border-radius: 8px;
+        padding: 14px 16px;
+        border-left: 4px solid #6366f1;
     }
 
-    .venue-products-section {
+    .line-options-inputs {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 16px;
+    }
+
+    .line-option {
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: 4px;
+    }
+
+    .line-option label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #6b7280;
+    }
+
+    .line-option .form-control {
+        max-width: 110px;
+    }
+
+    .line-option-total {
+        margin-left: auto;
+        text-align: right;
+    }
+
+    .line-total-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #6366f1;
     }
 </style>

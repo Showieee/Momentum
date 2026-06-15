@@ -140,6 +140,13 @@
                         <option value="3">Teambuilding</option>
                         <option value="4">Festival</option>
                         <option value="5">Other</option>
+                        <option value="6">Meeting</option>
+                        <option value="7">Party</option>
+                        <option value="8">Community</option>
+                        <option value="9">Conference</option>
+                        <option value="10">Gala</option>
+                        <option value="11">Product Launch</option>
+                        <option value="12">Baby Shower</option>
                     </InputSelect>
                     @if (_model.EventType == 0)
                     {
@@ -147,9 +154,11 @@
                     }
                 </div>
 
-                <div class="form-group">
+                <div class="form-group event-date-field">
                     <label class="form-label fw-bold">Event Date</label>
-                    <InputText type="date" class="form-control form-control-lg" @bind-value="_model.EventDate" />
+                    <DatePickerField @bind-Value="_model.EventDate"
+                                     Placeholder="Choose event date"
+                                     CssClass="form-control-lg" />
                     @if (string.IsNullOrWhiteSpace(_model.EventDate))
                     {
                         <div class="text-danger small mt-2">Event date is required</div>
@@ -191,6 +200,35 @@
                         </div>
                     }
                 </div>
+
+                @if (_selectedLocation != null && (_selectedLocation.IsPerPerson || _selectedLocation.IsHourly))
+                {
+                    <div class="line-options mt-4">
+                        <h6 class="mb-3">Pricing options for <strong>@_selectedLocation.Name</strong></h6>
+                        <div class="line-options-inputs">
+                            @if (_selectedLocation.IsPerPerson)
+                            {
+                                <div class="line-option">
+                                    <label>Number of people</label>
+                                    <input type="number" min="1" class="form-control"
+                                           @bind="_locationPeople" />
+                                </div>
+                            }
+                            @if (_selectedLocation.IsHourly)
+                            {
+                                <div class="line-option">
+                                    <label>Number of hours</label>
+                                    <input type="number" min="1" class="form-control"
+                                           @bind="_locationHours" />
+                                </div>
+                            }
+                            <div class="line-option line-option-total">
+                                <label>Venue total</label>
+                                <div class="line-total-value">@GetLocationLineTotal().ToString("N0") RON</div>
+                            </div>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -225,6 +263,10 @@
                                         <div class="product-item" title="Company: @product.CompanyName">
                                             <div class="product-info">
                                                 <h6 class="product-name">@product.Name</h6>
+                                                @if (!string.IsNullOrEmpty(product.CompanyName))
+                                                {
+                                                    <p class="product-company"><i class="bi bi-building"></i> @product.CompanyName</p>
+                                                }
                                                 @if (!string.IsNullOrEmpty(product.Description))
                                                 {
                                                     <p class="product-description">@product.Description</p>
@@ -264,8 +306,39 @@
                             @foreach (var product in _model.SelectedProducts)
                             {
                                 <div class="summary-row">
-                                    <span class="summary-name">@product.ProductName</span>
-                                    <span class="summary-price">@product.UnitPrice.ToString("N0") RON</span>
+                                    <div class="summary-name">
+                                        @product.ProductName
+                                        @if (!string.IsNullOrEmpty(product.CompanyName))
+                                        {
+                                            <small class="text-muted d-block">@product.CompanyName</small>
+                                        }
+                                        <small class="text-muted d-block">
+                                            @product.UnitPrice.ToString("N0") RON
+                                            @(product.IsPerPerson ? " / person" : "")@(product.IsHourly ? " / hour" : "")
+                                        </small>
+                                    </div>
+                                    @if (product.IsPerPerson || product.IsHourly)
+                                    {
+                                        <div class="summary-line-inputs">
+                                            @if (product.IsPerPerson)
+                                            {
+                                                <div class="line-option">
+                                                    <label>People</label>
+                                                    <input type="number" min="1" class="form-control form-control-sm"
+                                                           @bind="product.NumberOfPeople" />
+                                                </div>
+                                            }
+                                            @if (product.IsHourly)
+                                            {
+                                                <div class="line-option">
+                                                    <label>Hours</label>
+                                                    <input type="number" min="1" class="form-control form-control-sm"
+                                                           @bind="product.NumberOfHours" />
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                    <span class="summary-price">@product.LineTotal.ToString("N0") RON</span>
                                 </div>
                             }
                         </div>
@@ -292,7 +365,7 @@
                 <div class="review-section">
                     <h6 class="review-section-title">Event</h6>
                     <p class="review-value">@(_model.EventName ?? "Not specified")</p>
-                    <small class="text-muted">Date: @(_model.EventDate ?? "Not specified")</small>
+                    <small class="text-muted">Date: @FormatEventDate(_model.EventDate)</small>
                 </div>
 
                 <div class="review-section">
@@ -300,7 +373,22 @@
                     <p class="review-value">@(_selectedLocation?.Name ?? "Not selected")</p>
                     @if (_selectedLocation != null)
                     {
-                        <small class="text-muted">@_selectedLocation.Price.ToString("N0") RON</small>
+                        @if (!string.IsNullOrEmpty(_selectedLocation.CompanyName))
+                        {
+                            <small class="text-muted d-block">@_selectedLocation.CompanyName</small>
+                        }
+                        <small class="text-muted d-block">
+                            @_selectedLocation.Price.ToString("N0") RON
+                            @if (_selectedLocation.IsPerPerson)
+                            {
+                                <span> × @_locationPeople @(_locationPeople == 1 ? "person" : "people")</span>
+                            }
+                            @if (_selectedLocation.IsHourly)
+                            {
+                                <span> × @_locationHours @(_locationHours == 1 ? "hour" : "hours")</span>
+                            }
+                        </small>
+                        <small class="text-muted fw-bold">@GetLocationLineTotal().ToString("N0") RON</small>
                     }
                 </div>
 
@@ -312,8 +400,25 @@
                             @foreach (var product in _model.SelectedProducts)
                             {
                                 <div class="review-product-item">
-                                    <span>@product.ProductName</span>
-                                    <span class="fw-bold">@product.UnitPrice.ToString("N0") RON</span>
+                                    <span>
+                                        @product.ProductName
+                                        @if (!string.IsNullOrEmpty(product.CompanyName))
+                                        {
+                                            <small class="text-muted d-block">@product.CompanyName</small>
+                                        }
+                                        <small class="text-muted d-block">
+                                            @product.UnitPrice.ToString("N0") RON
+                                            @if (product.IsPerPerson)
+                                            {
+                                                <span> × @product.NumberOfPeople @(product.NumberOfPeople == 1 ? "person" : "people")</span>
+                                            }
+                                            @if (product.IsHourly)
+                                            {
+                                                <span> × @product.NumberOfHours @(product.NumberOfHours == 1 ? "hour" : "hours")</span>
+                                            }
+                                        </small>
+                                    </span>
+                                    <span class="fw-bold">@product.LineTotal.ToString("N0") RON</span>
                                 </div>
                             }
                         </div>
@@ -322,7 +427,7 @@
 
                 <div class="order-total">
                     <span class="total-label">Order Total:</span>
-                    <span class="total-amount">@(((_selectedLocation?.Price ?? 0m) + _model.TotalPrice).ToString("N0")) RON</span>
+                    <span class="total-amount">@GetOrderTotal().ToString("N0") RON</span>
                 </div>
             </div>
         </div>
@@ -359,40 +464,41 @@
 
 <style>
     .event-order-container {
-        max-width: 1000px;
+        max-width: 960px;
         margin: 0 auto;
-        padding: 30px 20px;
+        padding: 1.5rem 0;
     }
 
     .event-order-header {
         text-align: center;
-        margin-bottom: 40px;
+        margin-bottom: 2rem;
     }
 
     .event-order-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #2c3e50;
-        margin-bottom: 10px;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 0.375rem;
+        letter-spacing: -0.025em;
     }
 
     .event-order-subtitle {
-        font-size: 1rem;
-        color: #7f8c8d;
+        font-size: 0.9375rem;
+        color: #64748b;
         margin: 0;
     }
 
     .progress-wrapper {
-        margin-bottom: 50px;
-        padding: 30px 0;
+        margin-bottom: 2rem;
     }
 
     .stepper-container {
         display: flex;
         justify-content: center;
-        padding: 20px;
-        background: #f9fafb;
-        border-radius: 12px;
+        padding: 1.25rem;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.875rem;
     }
 
     .stepper-steps {
@@ -430,16 +536,16 @@
     }
 
     .step.active .step-circle {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        background: #4f46e5;
         color: white;
-        border-color: #6366f1;
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
     }
 
     .step.completed .step-circle {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background: #059669;
         color: white;
-        border-color: #10b981;
+        border-color: #059669;
     }
 
     .step-icon {
@@ -456,12 +562,12 @@
     }
 
     .step.active .step-label {
-        color: #6366f1;
-        font-weight: 700;
+        color: #4f46e5;
+        font-weight: 600;
     }
 
     .step.completed .step-label {
-        color: #10b981;
+        color: #059669;
     }
 
     .step-connector {
@@ -475,7 +581,7 @@
     }
 
     .step-connector.completed {
-        background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        background: #059669;
     }
 
     .step-content {
@@ -489,19 +595,22 @@
 
     .step-card {
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        margin-bottom: 30px;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.875rem;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+        overflow: visible;
+        margin-bottom: 1.5rem;
     }
 
     .step-card-header {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-        color: white;
-        padding: 30px;
+        background: #f8fafc;
+        color: #0f172a;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1.25rem 1.5rem;
         display: flex;
         align-items: center;
-        gap: 20px;
+        gap: 1rem;
+        border-radius: 0.875rem 0.875rem 0 0;
     }
 
     .step-icon {
@@ -535,15 +644,14 @@
     }
 
     .person-card:hover {
-        border-color: #6366f1;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
-        transform: translateY(-4px);
+        border-color: #4f46e5;
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
     }
 
     .person-card.selected {
-        border-color: #6366f1;
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+        border-color: #4f46e5;
+        background: #eef2ff;
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.1);
     }
 
     .person-card h5 {
@@ -585,14 +693,13 @@
     }
 
     .location-card:hover {
-        border-color: #6366f1;
-        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
-        transform: translateY(-6px);
+        border-color: #4f46e5;
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
     }
 
     .location-card.selected {
-        border-color: #6366f1;
-        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+        border-color: #4f46e5;
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.12);
     }
 
     .location-card-inner {
@@ -732,6 +839,13 @@
         margin: 0 0 6px 0;
         color: #2c3e50;
         font-weight: 600;
+    }
+
+    .product-company {
+        margin: 0 0 6px 0;
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #6366f1;
     }
 
     .product-description {
@@ -902,10 +1016,10 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: 30px;
-        padding: 20px;
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-        border-radius: 10px;
+        margin-top: 1.5rem;
+        padding: 1.25rem 1.5rem;
+        background: #4f46e5;
+        border-radius: 0.625rem;
         color: white;
     }
 
@@ -937,13 +1051,11 @@
     }
 
     .btn-primary:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+        box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
     }
 
     .btn-success:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
     }
 
     .btn:disabled {
@@ -967,5 +1079,62 @@
     .form-label {
         color: #2c3e50;
         margin-bottom: 10px;
+    }
+
+    .event-date-field {
+        max-width: 22rem;
+    }
+
+    /* Per-person / hourly line options */
+    .line-options {
+        background: #f9fafb;
+        border-radius: 10px;
+        padding: 20px;
+        border-left: 4px solid #6366f1;
+    }
+
+    .line-options-inputs {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 20px;
+    }
+
+    .line-option {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .line-option label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #6b7280;
+    }
+
+    .line-option .form-control {
+        max-width: 120px;
+    }
+
+    .line-option-total {
+        margin-left: auto;
+        text-align: right;
+    }
+
+    .line-total-value {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #6366f1;
+    }
+
+    .summary-line-inputs {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+        margin: 0 16px;
+    }
+
+    .summary-line-inputs .form-control {
+        max-width: 80px;
     }
 </style>

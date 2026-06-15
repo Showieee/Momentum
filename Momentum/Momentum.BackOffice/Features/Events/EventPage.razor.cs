@@ -19,11 +19,18 @@ public partial class EventPage : IDisposable
 	private Modal? _deleteModal;
 	private Modal? _infoModal;
 	private Modal? _editEventModal;
+	private Modal? _checkoutModal;
 	private EventViewModel _selectedEvent = new();
+	private CheckoutViewModel _checkout = new();
+	private EditContext _checkoutContext = null!;
+	private bool _isCheckoutValid;
+	private bool _isProcessingPayment;
 	private EventEntryViewModel _newEntry = new();
 	private EventEntryViewModel? _editEventEntry;
 	private List<LocationOptionViewModel> _availableLocationsForEdit = [];
 	private List<ProductOptionViewModel> _availableProductsForEdit = [];
+	private int _editLocationPeople = 1;
+	private int _editLocationHours = 1;
 	private bool _isValidForm;
 	private EditContext _editContext = null!;
 	private EditContext _editEventDetailsContext = null!;
@@ -52,6 +59,13 @@ public partial class EventPage : IDisposable
 			3 => "Teambuilding",
 			4 => "Festival",
 			5 => "Other",
+			6 => "Meeting",
+			7 => "Party",
+			8 => "Community",
+			9 => "Conference",
+			10 => "Gala",
+			11 => "Product Launch",
+			12 => "Baby Shower",
 			_ => "Unknown"
 		};
 	}
@@ -65,8 +79,55 @@ public partial class EventPage : IDisposable
 			4 => "Music",
 			5 => "Videography",
 			6 => "Decoration",
+			7 => "Entertainment",
+			8 => "Bar",
+			9 => "Security",
+			10 => "Cleaning",
+			11 => "Logistics",
+			12 => "Transport",
+			13 => "Print",
 			_ => "Service"
 		};
+	}
+
+	private LocationOptionViewModel? GetEditSelectedLocation()
+	{
+		if (_editEventEntry?.SelectedLocationId is not { } id || id == Guid.Empty)
+			return null;
+
+		return _availableLocationsForEdit.FirstOrDefault(l => l.Id == id);
+	}
+
+	private void SelectEditLocation(Guid locationId)
+	{
+		if (_editEventEntry == null)
+			return;
+
+		if (_editEventEntry.SelectedLocationId != locationId)
+		{
+			_editLocationPeople = 1;
+			_editLocationHours = 1;
+		}
+
+		_editEventEntry.SelectedLocationId = locationId;
+	}
+
+	private decimal GetEditLocationLineTotal()
+	{
+		var location = GetEditSelectedLocation();
+		if (location == null)
+			return 0m;
+
+		return location.Price
+			* (location.IsPerPerson ? Math.Max(1, _editLocationPeople) : 1)
+			* (location.IsHourly ? Math.Max(1, _editLocationHours) : 1);
+	}
+
+	private static decimal GetProductLineTotal(ProductOptionViewModel product)
+	{
+		return product.Price
+			* (product.IsPerPerson ? Math.Max(1, product.NumberOfPeople) : 1)
+			* (product.IsHourly ? Math.Max(1, product.NumberOfHours) : 1);
 	}
 
 	private decimal GetEditModalTotalPrice()
@@ -74,17 +135,7 @@ public partial class EventPage : IDisposable
 		if (_editEventEntry == null)
 			return 0m;
 
-		decimal total = 0m;
-
-		// Add location price
-		if (_editEventEntry.SelectedLocationId.HasValue && _editEventEntry.SelectedLocationId != Guid.Empty)
-		{
-			var location = _availableLocationsForEdit.FirstOrDefault(l => l.Id == _editEventEntry.SelectedLocationId);
-			if (location != null)
-			{
-				total += location.Price;
-			}
-		}
+		decimal total = GetEditLocationLineTotal();
 
 		// Add selected products prices
 		foreach (var productId in _editEventEntry.SelectedProductIds)
@@ -92,7 +143,7 @@ public partial class EventPage : IDisposable
 			var product = _availableProductsForEdit.FirstOrDefault(p => p.Id == productId);
 			if (product != null)
 			{
-				total += product.Price;
+				total += GetProductLineTotal(product);
 			}
 		}
 
@@ -110,7 +161,12 @@ public partial class EventPage : IDisposable
 
 	private void FieldChange(object? sender, FieldChangedEventArgs e)
 	{
-		_isValidForm = _editContext!.Validate();
+		// The add and edit modals use different EditContexts, so validate the one
+		// that actually raised the change instead of always using the add context.
+		if (sender is EditContext editContext)
+		{
+			_isValidForm = editContext.Validate();
+		}
 	}
 
 	private async Task LoadEvents()
@@ -149,6 +205,9 @@ public partial class EventPage : IDisposable
 					var eventOrder = eventOrders.FirstOrDefault(eo => eo.EventId == eventData.Id);
 					if (eventOrder != null)
 					{
+						eventViewModel.EventOrderId = eventOrder.Id;
+						eventViewModel.IsPaid = eventOrder.IsPaid;
+
 						// Find location product (Type = 1)
 						var locationProduct = eventOrder.Products?.FirstOrDefault(p => p.Product?.Type == 1);
 						if (locationProduct != null && locationProduct.Product != null)
@@ -156,6 +215,10 @@ public partial class EventPage : IDisposable
 							eventViewModel.SelectedLocationId = locationProduct.ProductId;
 							eventViewModel.LocationName = locationProduct.Product.Name;
 							eventViewModel.LocationPrice = locationProduct.UnitPrice;
+							eventViewModel.LocationIsPerPerson = locationProduct.Product.IsPerPerson;
+							eventViewModel.LocationIsHourly = locationProduct.Product.IsHourly;
+							eventViewModel.LocationPeople = locationProduct.NumberOfPeople;
+							eventViewModel.LocationHours = locationProduct.NumberOfHours;
 						}
 
 						// Get non-location products
@@ -165,7 +228,11 @@ public partial class EventPage : IDisposable
 							{
 								ProductId = p.ProductId,
 								ProductName = p.Product?.Name ?? "Unknown",
-								Price = p.UnitPrice
+								Price = p.UnitPrice,
+								IsPerPerson = p.Product?.IsPerPerson ?? false,
+								IsHourly = p.Product?.IsHourly ?? false,
+								NumberOfPeople = p.NumberOfPeople,
+								NumberOfHours = p.NumberOfHours
 							})
 							.ToList() ?? [];
 
@@ -298,6 +365,9 @@ public partial class EventPage : IDisposable
 		_isEditMode = true;
 		_isValidForm = true;
 
+		_editLocationPeople = _selectedEvent.LocationPeople < 1 ? 1 : _selectedEvent.LocationPeople;
+		_editLocationHours = _selectedEvent.LocationHours < 1 ? 1 : _selectedEvent.LocationHours;
+
 		await LoadAvailableLocationsAndProducts();
 		await _editEventModal!.ShowAsync();
 	}
@@ -351,6 +421,72 @@ public partial class EventPage : IDisposable
 		await _editEventModal!.HideAsync();
 	}
 
+	private async Task OpenCheckoutModal(Guid id)
+	{
+		_selectedEvent = _model.First(x => x.Id == id);
+		_checkout = new CheckoutViewModel();
+		_checkoutContext = new EditContext(_checkout);
+		_checkoutContext.OnFieldChanged += CheckoutFieldChange;
+		_isCheckoutValid = false;
+		_isProcessingPayment = false;
+		await _checkoutModal!.ShowAsync();
+	}
+
+	private async Task CloseCheckoutModal()
+	{
+		await _checkoutModal!.HideAsync();
+	}
+
+	private void CheckoutFieldChange(object? sender, FieldChangedEventArgs e)
+	{
+		_isCheckoutValid = _checkoutContext.Validate();
+	}
+
+	private void RefreshCheckoutModalData()
+	{
+		if (_checkoutContext is not null)
+		{
+			_checkoutContext.OnFieldChanged -= CheckoutFieldChange;
+		}
+
+		// Card details only ever live in this transient model and are never persisted or sent to the server.
+		_checkout = new CheckoutViewModel();
+		_isCheckoutValid = false;
+		_isProcessingPayment = false;
+	}
+
+	private async Task ProcessPayment()
+	{
+		if (!_checkoutContext.Validate())
+		{
+			return;
+		}
+
+		if (_selectedEvent.EventOrderId is not { } orderId || orderId == Guid.Empty)
+		{
+			await ShowException(new Exception("There is no order to pay for this event yet."));
+			return;
+		}
+
+		_isProcessingPayment = true;
+
+		await SafeExecute(async () =>
+		{
+			var response = await EventOrderService.PayEventOrder(orderId);
+			if (response.Error is not null)
+			{
+				await ShowException(response.Error);
+				return;
+			}
+
+			await LoadEvents();
+			await _checkoutModal!.HideAsync();
+			await ShowSuccess("Payment completed successfully");
+		});
+
+		_isProcessingPayment = false;
+	}
+
 	private async Task LoadAvailableLocationsAndProducts()
 	{
 		await SafeExecute(async () =>
@@ -366,18 +502,28 @@ public partial class EventPage : IDisposable
 					{
 						Id = p.Id,
 						Name = p.Name,
-						Price = p.Price
+						Price = p.Price,
+						IsPerPerson = p.IsPerPerson,
+						IsHourly = p.IsHourly
 					})
 					.ToList();
 
 				_availableProductsForEdit = allProducts
 					.Where(p => p.Type != 1)
-					.Select(p => new ProductOptionViewModel
+					.Select(p =>
 					{
-						Id = p.Id,
-						Name = p.Name,
-						Price = p.Price,
-						Type = p.Type
+						var existing = _selectedEvent.SelectedProducts.FirstOrDefault(sp => sp.ProductId == p.Id);
+						return new ProductOptionViewModel
+						{
+							Id = p.Id,
+							Name = p.Name,
+							Price = p.Price,
+							Type = p.Type,
+							IsPerPerson = p.IsPerPerson,
+							IsHourly = p.IsHourly,
+							NumberOfPeople = existing?.NumberOfPeople ?? 1,
+							NumberOfHours = existing?.NumberOfHours ?? 1
+						};
 					})
 					.OrderBy(p => p.Name)
 					.ToList();
@@ -521,20 +667,26 @@ public partial class EventPage : IDisposable
 				// Add location if selected
 				if (_editEventEntry.SelectedLocationId.HasValue && _editEventEntry.SelectedLocationId != Guid.Empty)
 				{
+					var location = GetEditSelectedLocation();
 					productsForUpdate.Add(new EventOrderProductRequest
 					{
 						ProductId = _editEventEntry.SelectedLocationId.Value,
-						Quantity = 1
+						Quantity = 1,
+						NumberOfPeople = location?.IsPerPerson == true ? Math.Max(1, _editLocationPeople) : 1,
+						NumberOfHours = location?.IsHourly == true ? Math.Max(1, _editLocationHours) : 1
 					});
 				}
 
 				// Add other products
 				foreach (var productId in _editEventEntry.SelectedProductIds)
 				{
+					var product = _availableProductsForEdit.FirstOrDefault(p => p.Id == productId);
 					productsForUpdate.Add(new EventOrderProductRequest
 					{
 						ProductId = productId,
-						Quantity = 1
+						Quantity = 1,
+						NumberOfPeople = product?.IsPerPerson == true ? Math.Max(1, product.NumberOfPeople) : 1,
+						NumberOfHours = product?.IsHourly == true ? Math.Max(1, product.NumberOfHours) : 1
 					});
 				}
 
@@ -584,6 +736,11 @@ public partial class EventPage : IDisposable
 		if (_editContext is not null)
 		{
 			_editContext.OnFieldChanged -= FieldChange;
+		}
+
+		if (_checkoutContext is not null)
+		{
+			_checkoutContext.OnFieldChanged -= CheckoutFieldChange;
 		}
 
 		_cts?.Dispose();

@@ -91,6 +91,8 @@ public partial class ProductPage : IDisposable
 					Name = p.Name,
 					Description = p.Description,
 					Price = p.Price,
+					IsPerPerson = p.IsPerPerson,
+					IsHourly = p.IsHourly,
 					CompanyId = p.CompanyId,
 					CompanyName = p.Company?.Name ?? string.Empty
 				}).ToList();
@@ -153,6 +155,8 @@ public partial class ProductPage : IDisposable
 					Name = _newEntry.Name!,
 					Description = _newEntry.Description,
 					Price = _newEntry.Price,
+					IsPerPerson = _newEntry.IsPerPerson,
+					IsHourly = _newEntry.IsHourly,
 					CompanyId = _newEntry.CompanyId
 				};
 				var response = await ProductService.UpdateProduct(_selectedProduct.Id, updateRequest);
@@ -174,6 +178,8 @@ public partial class ProductPage : IDisposable
 					Name = _newEntry.Name!,
 					Description = _newEntry.Description,
 					Price = _newEntry.Price,
+					IsPerPerson = _newEntry.IsPerPerson,
+					IsHourly = _newEntry.IsHourly,
 					CompanyId = _newEntry.CompanyId
 				};
 				var response = await ProductService.InsertProduct(request);
@@ -214,6 +220,8 @@ public partial class ProductPage : IDisposable
 			Name = _selectedProduct.Name,
 			Description = _selectedProduct.Description,
 			Price = _selectedProduct.Price,
+			IsPerPerson = _selectedProduct.IsPerPerson,
+			IsHourly = _selectedProduct.IsHourly,
 			CompanyId = _selectedProduct.CompanyId
 		};
 
@@ -268,6 +276,13 @@ public partial class ProductPage : IDisposable
 			4 => "Music",
 			5 => "Videography",
 			6 => "Decoration",
+			7 => "Entertainment",
+			8 => "Bar",
+			9 => "Security",
+			10 => "Cleaning",
+			11 => "Logistics",
+			12 => "Transport",
+			13 => "Print",
 			_ => "Unknown"
 		};
 	}

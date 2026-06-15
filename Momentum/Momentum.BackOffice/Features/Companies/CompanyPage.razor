@@ -1,27 +1,29 @@
 @inherits ExtendedComponentBase
 @attribute [Authorize(Roles = "Administrator, Manager")]
 
-<h3>Companies Management</h3>
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="page-title">Companies</h1>
+    </div>
 
-<!-- Search Field -->
-<div class="mb-3">
-    <input type="text" class="form-control" placeholder="Search company..."
-           @bind="_searchText" @oninput="OnSearchInput" />
-</div>
+    <div class="page-toolbar">
+        <div class="page-search">
+            <input type="text" class="form-control" placeholder="Search company..."
+                   @bind="_searchText" @oninput="OnSearchInput" />
+        </div>
+        <button class="btn btn-primary" @onclick="OpenAddModal">
+            <i class="bi bi-plus-lg"></i> Add company
+        </button>
+    </div>
 
-<!-- Add Button -->
-<button class="btn btn-primary mb-3" @onclick="OpenAddModal">
-    <i class="bi bi-plus-circle"></i> Add New Company
-</button>
-
-<!-- Display Companies Table -->
-@if (_filteredModel.Count == 0)
-{
-    <p>No matching records found.</p>
-}
-else
-{
-    <table class="table table-striped">
+    <div class="page-card">
+        @if (_filteredModel.Count == 0)
+        {
+            <p class="page-empty">No matching records found.</p>
+        }
+        else
+        {
+            <table class="table">
         <thead>
             <tr>
                 <th>Name</th>
@@ -47,9 +49,11 @@ else
                     </td>
                 </tr>
             }
-        </tbody>
-    </table>
-}
+            </tbody>
+        </table>
+        }
+    </div>
+</div>
 
 <!-- Add/Edit Modal -->
 <Modal @ref="_addModal" title="@(_isEditMode ? "Edit Company" : "Add New Company")" IsVerticallyCentered="true" OnHidden="RefreshModalData">

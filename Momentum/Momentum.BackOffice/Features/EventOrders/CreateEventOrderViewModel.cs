@@ -20,7 +20,7 @@ public class CreateEventOrderViewModel
     public List<SelectedProductViewModel> SelectedProducts { get; set; } = [];
 
     // Summary
-    public decimal TotalPrice => SelectedProducts.Sum(p => p.UnitPrice);
+    public decimal TotalPrice => SelectedProducts.Sum(p => p.LineTotal);
 }
 
 public class PersonOptionViewModel
@@ -37,6 +37,8 @@ public class LocationOptionViewModel
     public string? Description { get; set; }
     public decimal Price { get; set; }
     public string CompanyName { get; set; } = string.Empty;
+    public bool IsPerPerson { get; set; }
+    public bool IsHourly { get; set; }
 }
 
 public class ProductSelectionViewModel
@@ -48,11 +50,22 @@ public class ProductSelectionViewModel
     public int Type { get; set; }
     public string TypeName { get; set; } = string.Empty;
     public string? CompanyName { get; set; }
+    public bool IsPerPerson { get; set; }
+    public bool IsHourly { get; set; }
 }
 
 public class SelectedProductViewModel
 {
     public Guid ProductId { get; set; }
     public string ProductName { get; set; } = string.Empty;
+    public string? CompanyName { get; set; }
     public decimal UnitPrice { get; set; }
+    public bool IsPerPerson { get; set; }
+    public bool IsHourly { get; set; }
+    public int NumberOfPeople { get; set; } = 1;
+    public int NumberOfHours { get; set; } = 1;
+
+    public decimal LineTotal => UnitPrice
+        * (IsPerPerson ? Math.Max(1, NumberOfPeople) : 1)
+        * (IsHourly ? Math.Max(1, NumberOfHours) : 1);
 }

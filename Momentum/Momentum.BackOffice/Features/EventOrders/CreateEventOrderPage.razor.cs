@@ -14,6 +14,8 @@ public partial class CreateEventOrderPage : IDisposable
     private CreateEventOrderViewModel _model = new();
     private PersonDetail? _selectedPerson;
     private LocationOptionViewModel? _selectedLocation;
+    private int _locationPeople = 1;
+    private int _locationHours = 1;
     private bool _isSubmitting;
     private HashSet<string> _expandedCategories = [];
     private List<ProductGroupViewModel> _productGroups = [];
@@ -73,7 +75,9 @@ public partial class CreateEventOrderPage : IDisposable
                         Price = p.Price,
                         Type = p.Type,
                         TypeName = GetProductTypeName(p.Type),
-                        CompanyName = p.Company?.Name
+                        CompanyName = p.Company?.Name,
+                        IsPerPerson = p.IsPerPerson,
+                        IsHourly = p.IsHourly
                     })
                     .OrderBy(p => p.Type)
                     .ToList();
@@ -87,7 +91,9 @@ public partial class CreateEventOrderPage : IDisposable
                         Name = p.Name,
                         Description = p.Description,
                         Price = p.Price,
-                        CompanyName = "Event Venue" 
+                        CompanyName = p.CompanyName ?? "",
+                        IsPerPerson = p.IsPerPerson,
+                        IsHourly = p.IsHourly
                     })
                     .ToList();
             }
@@ -119,6 +125,13 @@ public partial class CreateEventOrderPage : IDisposable
             4 => "Music",
             5 => "Videography",
             6 => "Decoration",
+            7 => "Entertainment",
+            8 => "Bar",
+            9 => "Security",
+            10 => "Cleaning",
+            11 => "Logistics",
+            12 => "Transport",
+            13 => "Print",
             _ => "Unknown"
         };
     }
@@ -135,6 +148,18 @@ public partial class CreateEventOrderPage : IDisposable
             3 => _model.SelectedProducts.Count > 0,
             _ => true
         };
+    }
+
+    private static string FormatEventDate(string? eventDate)
+    {
+        if (string.IsNullOrWhiteSpace(eventDate))
+        {
+            return "Not specified";
+        }
+
+        return DateOnly.TryParse(eventDate, out var parsed)
+            ? parsed.ToString("dddd, MMMM d, yyyy")
+            : eventDate;
     }
 
     private void NextStep()
@@ -172,6 +197,23 @@ public partial class CreateEventOrderPage : IDisposable
     {
         _model.SelectedLocationId = location.Id;
         _selectedLocation = location;
+        _locationPeople = 1;
+        _locationHours = 1;
+    }
+
+    private decimal GetLocationLineTotal()
+    {
+        if (_selectedLocation == null)
+            return 0m;
+
+        return _selectedLocation.Price
+            * (_selectedLocation.IsPerPerson ? Math.Max(1, _locationPeople) : 1)
+            * (_selectedLocation.IsHourly ? Math.Max(1, _locationHours) : 1);
+    }
+
+    private decimal GetOrderTotal()
+    {
+        return GetLocationLineTotal() + _model.TotalPrice;
     }
 
     private void ToggleCategoryExpanded(string categoryName)
@@ -198,7 +240,12 @@ public partial class CreateEventOrderPage : IDisposable
         {
             ProductId = product.Id,
             ProductName = product.Name,
+            CompanyName = product.CompanyName,
             UnitPrice = product.Price,
+            IsPerPerson = product.IsPerPerson,
+            IsHourly = product.IsHourly,
+            NumberOfPeople = 1,
+            NumberOfHours = 1,
         };
         _model.SelectedProducts.Add(selectedProduct);
     }
@@ -252,7 +299,9 @@ public partial class CreateEventOrderPage : IDisposable
             {
                 products.Add(new BackOffice.Services.EventOrderProductRequest
                 {
-                    ProductId = _model.SelectedLocationId
+                    ProductId = _model.SelectedLocationId,
+                    NumberOfPeople = _selectedLocation?.IsPerPerson == true ? Math.Max(1, _locationPeople) : 1,
+                    NumberOfHours = _selectedLocation?.IsHourly == true ? Math.Max(1, _locationHours) : 1
                 });
             }
 
@@ -260,7 +309,9 @@ public partial class CreateEventOrderPage : IDisposable
             products.AddRange(_model.SelectedProducts
                 .Select(p => new BackOffice.Services.EventOrderProductRequest
                 {
-                    ProductId = p.ProductId
+                    ProductId = p.ProductId,
+                    NumberOfPeople = p.IsPerPerson ? Math.Max(1, p.NumberOfPeople) : 1,
+                    NumberOfHours = p.IsHourly ? Math.Max(1, p.NumberOfHours) : 1
                 }));
 
             // Then create the event order
